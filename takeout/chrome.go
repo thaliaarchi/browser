@@ -3,7 +3,8 @@ package takeout
 type Chrome struct {
 	// Autofill.json
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
-	// Bookmarks.html TODO
+	// Bookmarks.html
+	Bookmarks []BookmarkEntry
 	// BrowserHistory.json
 	BrowserHistory []BrowserHistory `json:"Browser History"`
 	// Dictionary.csv TODO
