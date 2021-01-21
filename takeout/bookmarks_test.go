@@ -1,7 +1,7 @@
 package takeout
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
 	"testing"
 )
@@ -16,25 +16,10 @@ func TestBookmarks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dumpFolder(b)
-	t.Fail()
-}
-
-func dumpFolder(f *BookmarkFolder) {
-	fmt.Printf("%s\nAdd Date: %s\nLast Modified: %s\n",
-		f.Title, f.AddDate, f.LastModified)
-	fmt.Println()
-	for i := range f.Entries {
-		switch e := f.Entries[i].(type) {
-		case *BookmarkFolder:
-			dumpFolder(e)
-		case *Bookmark:
-			dumpBookmark(e)
-		}
+	e := json.NewEncoder(os.Stdout)
+	e.SetIndent("", "  ")
+	if err := e.Encode(b); err != nil {
+		t.Error(err)
 	}
-	fmt.Println("----")
-}
-
-func dumpBookmark(b *Bookmark) {
-	fmt.Printf("%s %s %s %s\n", b.AddDate, b.Title, b.URL, b.IconURI)
+	t.Fail()
 }

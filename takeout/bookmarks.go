@@ -34,7 +34,7 @@ type Bookmark struct {
 }
 
 // ParseNetscapeBookmarks parses a Netscape-format bookmark file.
-func ParseNetscapeBookmarks(r io.Reader) (*BookmarkFolder, error) {
+func ParseNetscapeBookmarks(r io.Reader) ([]BookmarkEntry, error) {
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, err
@@ -42,19 +42,15 @@ func ParseNetscapeBookmarks(r io.Reader) (*BookmarkFolder, error) {
 	if err := checkDoctype(doc, "netscape-bookmark-file-1"); err != nil {
 		return nil, err
 	}
-	dl := doc.Find("h1 + dl")
+	dl := doc.Find("body > dl")
 	if dl.Length() != 1 {
 		return nil, fmt.Errorf("root has %d lists", dl.Length())
 	}
-	e, err := parseFolderList(dl)
+	entries, err := parseFolderList(dl)
 	if err != nil {
 		return nil, err
 	}
-	f := &BookmarkFolder{
-		Title:   dl.PrevFiltered("h1").Text(),
-		Entries: e,
-	}
-	return f, nil
+	return entries, nil
 }
 
 func checkDoctype(doc *goquery.Document, doctype string) error {
@@ -82,8 +78,8 @@ func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {
 	entries, err := parseFolderList(dt.ChildrenFiltered("dl").First())
 	f := &BookmarkFolder{
 		Title:        h3.Text(),
-		AddDate:      unixMs(addDate),
-		LastModified: unixMs(lastModified),
+		AddDate:      unixMsec(addDate),
+		LastModified: unixMsec(lastModified),
 		Entries:      entries,
 	}
 	return f, nil
@@ -110,7 +106,7 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 			e = &Bookmark{
 				Title:   a.Text(),
 				URL:     a.AttrOr("href", ""),
-				AddDate: time.Unix(addDate, 0).UTC(), // TODO fix date convert
+				AddDate: chromeTime(addDate),
 				IconURI: a.AttrOr("icon_uri", ""),
 			}
 		}
@@ -128,6 +124,15 @@ func parseNumber(e *goquery.Selection, attr string) (int64, error) {
 	return strconv.ParseInt(v, 10, 64)
 }
 
-func unixMs(ms int64) time.Time {
-	return time.Unix(ms/1000, (ms%1000)*1000000).UTC()
+func unixMsec(msec int64) time.Time {
+	return time.Unix(msec/1000, (msec%1000)*1000000).UTC()
+}
+
+func chromeTime(usec int64) time.Time {
+	// Chrome stores the date_added field for URLs as
+	// microseconds since 1 Jan 1601.
+	// http://fileformats.archiveteam.org/wiki/Chrome_bookmarks
+	sec := usec / 1e6
+	nsec := (usec % 1e6) * 1000
+	return time.Date(1601, 1, 1, 0, 0, int(sec), int(nsec), time.UTC)
 }
