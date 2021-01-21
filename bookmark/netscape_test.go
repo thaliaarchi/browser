@@ -1,4 +1,4 @@
-package takeout
+package bookmark
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ func TestBookmarks(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer f.Close()
-	b, err := ParseNetscapeBookmarks(f)
+	b, err := ParseNetscape(f)
 	if err != nil {
 		t.Fatal(err)
 	}

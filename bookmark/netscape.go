@@ -1,4 +1,4 @@
-package takeout
+package bookmark
 
 import (
 	"errors"
@@ -15,7 +15,8 @@ import (
 // http://fileformats.archiveteam.org/wiki/Netscape_bookmarks
 // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa753582(v=vs.85)
 //
-// Other services appear to use fields not used by Chrome Takeout.
+// Other services appear to use fields not used by
+// Chrome bookmarks in Google Takeout.
 
 type BookmarkEntry interface{} // BookmarkFolder or Bookmark
 
@@ -33,8 +34,8 @@ type Bookmark struct {
 	IconURI string
 }
 
-// ParseNetscapeBookmarks parses a Netscape-format bookmark file.
-func ParseNetscapeBookmarks(r io.Reader) ([]BookmarkEntry, error) {
+// ParseNetscape parses a Netscape-format bookmark file.
+func ParseNetscape(r io.Reader) ([]BookmarkEntry, error) {
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, err

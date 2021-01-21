@@ -1,10 +1,12 @@
 package takeout
 
+import "github.com/andrewarchi/archive/bookmark"
+
 type Chrome struct {
 	// Autofill.json
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
 	// Bookmarks.html
-	Bookmarks []BookmarkEntry
+	Bookmarks []bookmark.BookmarkEntry
 	// BrowserHistory.json
 	BrowserHistory []BrowserHistory `json:"Browser History"`
 	// Dictionary.csv TODO
