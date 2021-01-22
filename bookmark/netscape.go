@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/andrewarchi/archive/jsontime"
 	"golang.org/x/net/html"
 )
 
@@ -79,8 +80,8 @@ func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {
 	entries, err := parseFolderList(dt.ChildrenFiltered("dl").First())
 	f := &BookmarkFolder{
 		Title:        h3.Text(),
-		AddDate:      unixMsec(addDate),
-		LastModified: unixMsec(lastModified),
+		AddDate:      unixMilli(addDate),
+		LastModified: unixMilli(lastModified),
 		Entries:      entries,
 	}
 	return f, nil
@@ -107,7 +108,7 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 			e = &Bookmark{
 				Title:   a.Text(),
 				URL:     a.AttrOr("href", ""),
-				AddDate: chromeTime(addDate),
+				AddDate: jsontime.FromChromeMicro(addDate),
 				IconURI: a.AttrOr("icon_uri", ""),
 			}
 		}
@@ -125,15 +126,6 @@ func parseNumber(e *goquery.Selection, attr string) (int64, error) {
 	return strconv.ParseInt(v, 10, 64)
 }
 
-func unixMsec(msec int64) time.Time {
+func unixMilli(msec int64) time.Time {
 	return time.Unix(msec/1000, (msec%1000)*1000000).UTC()
-}
-
-func chromeTime(usec int64) time.Time {
-	// Chrome stores the date_added field for URLs as
-	// microseconds since 1 Jan 1601.
-	// http://fileformats.archiveteam.org/wiki/Chrome_bookmarks
-	sec := usec / 1e6
-	nsec := (usec % 1e6) * 1000
-	return time.Date(1601, 1, 1, 0, 0, int(sec), int(nsec), time.UTC)
 }

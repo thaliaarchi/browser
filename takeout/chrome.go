@@ -1,6 +1,9 @@
 package takeout
 
-import "github.com/andrewarchi/archive/bookmark"
+import (
+	"github.com/andrewarchi/archive/bookmark"
+	"github.com/andrewarchi/archive/jsontime"
+)
 
 type Chrome struct {
 	// Autofill.json
@@ -23,38 +26,38 @@ type Chrome struct {
 }
 
 type AutofillProfile struct {
-	GUID                          string   `json:"guid"`
-	NameFull                      []string `json:"name_full"`
-	NameFirst                     []string `json:"name_first"`
-	NameMiddle                    []string `json:"name_middle"`
-	NameLast                      []string `json:"name_last"`
-	AddressHomeStreetAddress      string   `json:"address_home_street_address"`
-	AddressHomeLine1              string   `json:"address_home_line1"`
-	AddressHomeLine2              string   `json:"address_home_line2"`
-	AddressHomeCity               string   `json:"address_home_city"`
-	AddressHomeState              string   `json:"address_home_state"`
-	AddressHomeZip                string   `json:"address_home_zip"`
-	AddressHomeCountry            string   `json:"address_home_country"`
-	AddressHomeSortingCode        string   `json:"address_home_sorting_code"`
-	AddressHomeLanguageCode       string   `json:"address_home_language_code"`
-	AddressHomeDependentLocality  string   `json:"address_home_dependent_locality"`
-	EmailAddress                  []string `json:"email_address"`
-	PhoneHomeWholeNumber          []string `json:"phone_home_whole_number"`
-	Origin                        string   `json:"origin"`
-	IsClientValidityStatesUpdated bool     `json:"is_client_validity_states_updated"`
-	UseCount                      int      `json:"use_count"`
-	ValidityStateBitfield         uint64   `json:"validity_state_bitfield"` // TODO: allowed states and bitwidth unknown
-	CompanyName                   string   `json:"company_name"`
-	UseDate                       int64    `json:"use_date"`
+	GUID                          string           `json:"guid"`
+	NameFull                      []string         `json:"name_full"`
+	NameFirst                     []string         `json:"name_first"`
+	NameMiddle                    []string         `json:"name_middle"`
+	NameLast                      []string         `json:"name_last"`
+	AddressHomeStreetAddress      string           `json:"address_home_street_address"`
+	AddressHomeLine1              string           `json:"address_home_line1"`
+	AddressHomeLine2              string           `json:"address_home_line2"`
+	AddressHomeCity               string           `json:"address_home_city"`
+	AddressHomeState              string           `json:"address_home_state"`
+	AddressHomeZip                string           `json:"address_home_zip"`
+	AddressHomeCountry            string           `json:"address_home_country"`
+	AddressHomeSortingCode        string           `json:"address_home_sorting_code"`
+	AddressHomeLanguageCode       string           `json:"address_home_language_code"`
+	AddressHomeDependentLocality  string           `json:"address_home_dependent_locality"`
+	EmailAddress                  []string         `json:"email_address"`
+	PhoneHomeWholeNumber          []string         `json:"phone_home_whole_number"`
+	Origin                        string           `json:"origin"`
+	IsClientValidityStatesUpdated bool             `json:"is_client_validity_states_updated"`
+	UseCount                      int              `json:"use_count"`
+	ValidityStateBitfield         uint64           `json:"validity_state_bitfield"` // TODO: allowed states and bitwidth unknown
+	CompanyName                   string           `json:"company_name"`
+	UseDate                       jsontime.UnixSec `json:"use_date"`
 }
 
 type BrowserHistory struct {
-	FaviconURL     string         `json:"favicon_url,omitempty"`
-	PageTransition PageTransition `json:"page_transition"`
-	Title          string         `json:"title"`
-	URL            string         `json:"url"`
-	ClientID       string         `json:"client_id"` // base64-encoded
-	TimeUsec       int64          `json:"time_usec"`
+	FaviconURL     string             `json:"favicon_url,omitempty"`
+	PageTransition PageTransition     `json:"page_transition"`
+	Title          string             `json:"title"`
+	URL            string             `json:"url"`
+	ClientID       string             `json:"client_id"` // base64-encoded
+	Time           jsontime.UnixMicro `json:"time_usec"`
 }
 
 type PageTransition string
@@ -90,36 +93,36 @@ type ExtensionSetting struct {
 }
 
 type SearchEngine struct {
-	SuggestionsURL              string         `json:"suggestions_url"`
-	ImageURLPostParams          *string        `json:"image_url_post_params,omitempty"`
-	FaviconURL                  string         `json:"favicon_url"`
-	SafeForAutoreplace          bool           `json:"safe_for_autoreplace"`
-	DateCreated                 int64          `json:"date_created"`
-	ImageURL                    *string        `json:"image_url,omitempty"`
-	URL                         string         `json:"url"`
-	NewTabURL                   string         `json:"new_tab_url"`
-	InstantURL                  *string        `json:"instant_url,omitempty"`
-	OriginatingURL              string         `json:"originating_url"`
-	SearchTermsReplacementKey   *string        `json:"search_terms_replacement_key,omitempty"`
-	DeprecatedShowInDefaultList *bool          `json:"deprecated_show_in_default_list,omitempty"`
-	SyncGUID                    string         `json:"sync_guid"`
-	ShortName                   string         `json:"short_name"`
-	Keyword                     string         `json:"keyword"`
-	InputEncodings              InputEncodings `json:"input_encodings"`
-	AlternateUrls               []string       `json:"alternate_urls,omitempty"`
-	PrepopulateID               int64          `json:"prepopulate_id"`
-	LastModified                int64          `json:"last_modified"`
+	ShortName                   string               `json:"short_name"`
+	Keyword                     string               `json:"keyword"`
+	URL                         string               `json:"url"`
+	SuggestionsURL              string               `json:"suggestions_url"`
+	FaviconURL                  string               `json:"favicon_url"`
+	ImageURL                    *string              `json:"image_url,omitempty"`
+	NewTabURL                   string               `json:"new_tab_url"`
+	InstantURL                  *string              `json:"instant_url,omitempty"`
+	OriginatingURL              string               `json:"originating_url"`
+	ImageURLPostParams          *string              `json:"image_url_post_params,omitempty"`
+	SafeForAutoreplace          bool                 `json:"safe_for_autoreplace"`
+	DateCreated                 jsontime.ChromeMicro `json:"date_created"`
+	LastModified                jsontime.ChromeMicro `json:"last_modified"`
+	SearchTermsReplacementKey   *string              `json:"search_terms_replacement_key,omitempty"`
+	DeprecatedShowInDefaultList *bool                `json:"deprecated_show_in_default_list,omitempty"`
+	SyncGUID                    string               `json:"sync_guid"`
+	InputEncodings              InputEncodings       `json:"input_encodings"`
+	AlternateUrls               []string             `json:"alternate_urls,omitempty"`
+	PrepopulateID               int64                `json:"prepopulate_id"`
 }
 
 type InputEncodings string
 
 // Known values for input_encodings.
 const (
-	EncodingEmpty         InputEncodings = ""
-	EncodingISO88591      InputEncodings = "ISO-8859-1"
-	EncodingInputEncoding InputEncodings = "inputEncoding"
-	EncodingUTF8          InputEncodings = "UTF-8"
-	EncodingWindows1252   InputEncodings = "windows-1252"
+	EncodingEmpty       InputEncodings = ""
+	EncodingUTF8        InputEncodings = "UTF-8"
+	EncodingISO88591    InputEncodings = "ISO-8859-1"
+	EncodingWindows1252 InputEncodings = "windows-1252"
+	EncodingInput       InputEncodings = "inputEncoding"
 )
 
 type App struct {
