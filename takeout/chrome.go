@@ -23,28 +23,28 @@ type Chrome struct {
 }
 
 type AutofillProfile struct {
-	NameFirst                     []string `json:"name_first"`
-	AddressHomeCountry            string   `json:"address_home_country"`
-	AddressHomeSortingCode        string   `json:"address_home_sorting_code"`
-	AddressHomeState              string   `json:"address_home_state"`
-	AddressHomeDependentLocality  string   `json:"address_home_dependent_locality"`
-	AddressHomeCity               string   `json:"address_home_city"`
-	AddressHomeLanguageCode       string   `json:"address_home_language_code"`
+	GUID                          string   `json:"guid"`
 	NameFull                      []string `json:"name_full"`
-	Origin                        string   `json:"origin"`
-	NameLast                      []string `json:"name_last"`
-	IsClientValidityStatesUpdated bool     `json:"is_client_validity_states_updated"`
+	NameFirst                     []string `json:"name_first"`
 	NameMiddle                    []string `json:"name_middle"`
-	UseCount                      int64    `json:"use_count"`
-	EmailAddress                  []string `json:"email_address"`
-	ValidityStateBitfield         int64    `json:"validity_state_bitfield"`
-	CompanyName                   string   `json:"company_name"`
+	NameLast                      []string `json:"name_last"`
+	AddressHomeStreetAddress      string   `json:"address_home_street_address"`
 	AddressHomeLine1              string   `json:"address_home_line1"`
 	AddressHomeLine2              string   `json:"address_home_line2"`
-	GUID                          string   `json:"guid"`
+	AddressHomeCity               string   `json:"address_home_city"`
+	AddressHomeState              string   `json:"address_home_state"`
 	AddressHomeZip                string   `json:"address_home_zip"`
-	AddressHomeStreetAddress      string   `json:"address_home_street_address"`
+	AddressHomeCountry            string   `json:"address_home_country"`
+	AddressHomeSortingCode        string   `json:"address_home_sorting_code"`
+	AddressHomeLanguageCode       string   `json:"address_home_language_code"`
+	AddressHomeDependentLocality  string   `json:"address_home_dependent_locality"`
+	EmailAddress                  []string `json:"email_address"`
 	PhoneHomeWholeNumber          []string `json:"phone_home_whole_number"`
+	Origin                        string   `json:"origin"`
+	IsClientValidityStatesUpdated bool     `json:"is_client_validity_states_updated"`
+	UseCount                      int      `json:"use_count"`
+	ValidityStateBitfield         uint64   `json:"validity_state_bitfield"` // TODO: allowed states and bitwidth unknown
+	CompanyName                   string   `json:"company_name"`
 	UseDate                       int64    `json:"use_date"`
 }
 
@@ -106,7 +106,7 @@ type SearchEngine struct {
 	ShortName                   string         `json:"short_name"`
 	Keyword                     string         `json:"keyword"`
 	InputEncodings              InputEncodings `json:"input_encodings"`
-	AlternateUrls               []string       `json:"alternate_urls"`
+	AlternateUrls               []string       `json:"alternate_urls,omitempty"`
 	PrepopulateID               int64          `json:"prepopulate_id"`
 	LastModified                int64          `json:"last_modified"`
 }
