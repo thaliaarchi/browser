@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/andrewarchi/archive/jsontime"
+	"github.com/andrewarchi/archive/timefmt"
 	"golang.org/x/net/html"
 )
 
@@ -108,7 +108,7 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 			e = &Bookmark{
 				Title:   a.Text(),
 				URL:     a.AttrOr("href", ""),
-				AddDate: jsontime.FromChromeMicro(addDate),
+				AddDate: timefmt.FromChromeMicro(addDate),
 				IconURI: a.AttrOr("icon_uri", ""),
 			}
 		}

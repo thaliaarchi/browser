@@ -1,4 +1,4 @@
-package jsontime
+package timefmt
 
 import (
 	"strconv"
@@ -12,7 +12,7 @@ type UnixSec struct{ time.Time }
 // The time is a number representing a Unix timestamp.
 func (t UnixSec) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
-		return []byte("null"), nil
+		return []byte("0"), nil
 	}
 	return []byte(strconv.FormatInt(t.Unix(), 10)), nil
 }
@@ -35,7 +35,7 @@ type UnixMicro struct{ time.Time }
 
 func (t UnixMicro) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
-		return []byte("null"), nil
+		return []byte("0"), nil
 	}
 	return []byte(strconv.FormatInt(t.UnixNano()/1000, 10)), nil
 }

@@ -1,4 +1,4 @@
-package jsontime
+package timefmt
 
 import (
 	"strconv"
@@ -18,6 +18,14 @@ func FromChromeMicro(usec int64) time.Time {
 // ChromeMicro handles parsing of Chrome timestamps in JSON.
 type ChromeMicro struct {
 	time.Time
+}
+
+func (t ChromeMicro) MarshalJSON() ([]byte, error) {
+	if t.IsZero() {
+		return []byte("0"), nil
+	}
+	usec := t.Sub(time.Date(1601, 1, 1, 0, 0, 0, 0, time.UTC)) / time.Microsecond
+	return []byte(strconv.FormatInt(int64(usec), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
