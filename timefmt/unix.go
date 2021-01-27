@@ -5,6 +5,27 @@ import (
 	"time"
 )
 
+func FromUnixSec(sec int64) time.Time {
+	if sec == 0 {
+		return time.Time{}
+	}
+	return time.Unix(sec, 0).UTC()
+}
+
+func FromUnixMilli(msec int64) time.Time {
+	if msec == 0 {
+		return time.Time{}
+	}
+	return time.Unix(msec/1e3, (msec%1e3)*1e6).UTC()
+}
+
+func FromUnixMicro(usec int64) time.Time {
+	if usec == 0 {
+		return time.Time{}
+	}
+	return time.Unix(usec/1e6, (usec%1e6)*1e3).UTC()
+}
+
 // UnixSec is a time formatted as a Unix timestamp.
 type UnixSec struct{ time.Time }
 
@@ -27,7 +48,7 @@ func (t *UnixSec) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*t = UnixSec{time.Unix(sec, 0)}
+	*t = UnixSec{FromUnixSec(sec)}
 	return nil
 }
 
@@ -48,6 +69,6 @@ func (t *UnixMicro) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*t = UnixMicro{time.Unix(usec/1e6, (usec%1e6)*1e3)}
+	*t = UnixMicro{FromUnixMicro(usec)}
 	return nil
 }

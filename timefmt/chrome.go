@@ -9,6 +9,9 @@ import (
 // For some fields, Chrome uses a format of microseconds since
 // 1 Jan 1601.
 func FromChromeMicro(usec int64) time.Time {
+	if usec == 0 {
+		return time.Time{}
+	}
 	// http://fileformats.archiveteam.org/wiki/Chrome_bookmarks#Date_format
 	sec := usec / 1e6
 	nsec := (usec % 1e6) * 1000

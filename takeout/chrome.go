@@ -7,22 +7,24 @@ import (
 
 type Chrome struct {
 	// Autofill.json
+	Autofill        []AutofillProfile `json:"Autofill"` // Appears in older archives
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
 	// Bookmarks.html
 	Bookmarks []bookmark.BookmarkEntry
 	// BrowserHistory.json
 	BrowserHistory []BrowserHistory `json:"Browser History"`
-	// Dictionary.csv TODO
+	// Dictionary.csv - TODO unknown structure
 	// Extensions.json
 	Extensions        []Extension        `json:"Extensions"`
 	ExtensionSettings []ExtensionSetting `json:"Extension Settings"`
 	// SearchEngines.json
 	SearchEngines []SearchEngine `json:"Search Engines"`
 	// SyncSettings.json
-	Apps        []App        `json:"Apps"`
-	AppSettings []AppSetting `json:"App Settings"`
-	Preferences []Preference `json:"Preferences"`
-	Themes      []Theme      `json:"Themes"`
+	Apps         []App         `json:"Apps"`
+	AppSettings  []AppSetting  `json:"App Settings"`
+	Preferences  []Preference  `json:"Preferences"`
+	Themes       []Theme       `json:"Themes"`
+	ManagedUsers []interface{} `json:"Managed Users"` // TODO unknown structure
 }
 
 type AutofillProfile struct {

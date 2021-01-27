@@ -80,8 +80,8 @@ func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {
 	entries, err := parseFolderList(dt.ChildrenFiltered("dl").First())
 	f := &BookmarkFolder{
 		Title:        h3.Text(),
-		AddDate:      unixMilli(addDate),
-		LastModified: unixMilli(lastModified),
+		AddDate:      timefmt.FromUnixMilli(addDate),
+		LastModified: timefmt.FromUnixMilli(lastModified),
 		Entries:      entries,
 	}
 	return f, nil
@@ -124,8 +124,4 @@ func parseNumber(e *goquery.Selection, attr string) (int64, error) {
 		return 0, nil
 	}
 	return strconv.ParseInt(v, 10, 64)
-}
-
-func unixMilli(msec int64) time.Time {
-	return time.Unix(msec/1000, (msec%1000)*1000000).UTC()
 }
