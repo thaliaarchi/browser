@@ -40,7 +40,8 @@ type ExtensionSetting struct {
 	Enabled     bool              `json:"enabled"`
 }
 
-// ParseExtensionSettings parses an extension-settings.json file.
+// ParseExtensionSettings parses the extension-settings.json file in a
+// Firefox profile.
 func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 	var settings ExtensionSettings
 	if err := parseJSON(filename, &settings); err != nil {
@@ -56,7 +57,8 @@ type ExtensionPermissions struct {
 	Origins     []string `json:"origins"`     // Origins given access to
 }
 
-// ParseExtensionPreferences parses an extension-preferences.json file.
+// ParseExtensionPreferences parses the extension-preferences.json file
+// in a Firefox profile.
 func ParseExtensionPreferences(filename string) (map[string]ExtensionPermissions, error) {
 	var prefs map[string]ExtensionPermissions
 	if err := parseJSON(filename, &prefs); err != nil {
@@ -211,7 +213,7 @@ const (
 	LocationAppSystemLocal    Location = "app-system-local"
 )
 
-// ParseExtensions parses an extensions.json file.
+// ParseExtensions parses the extensions.json file in a Firefox profile.
 func ParseExtensions(filename string) (*Extensions, error) {
 	var extensions Extensions
 	if err := parseJSON(filename, &extensions); err != nil {
