@@ -51,7 +51,7 @@ type AutofillProfile struct {
 	Origin                        string          `json:"origin"`
 	IsClientValidityStatesUpdated bool            `json:"is_client_validity_states_updated"`
 	UseCount                      int             `json:"use_count"`
-	ValidityStateBitfield         uint64          `json:"validity_state_bitfield"` // TODO: allowed states and bitwidth unknown
+	ValidityStateBitfield         uint64          `json:"validity_state_bitfield"` // TODO unknown states
 	CompanyName                   string          `json:"company_name"`
 	UseDate                       timefmt.UnixSec `json:"use_date"`
 }

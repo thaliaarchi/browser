@@ -2,6 +2,7 @@ package takeout
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -90,7 +91,10 @@ func ParseChrome(filename string) (*Chrome, error) {
 				return err
 			}
 			data.Bookmarks = b
-		case "Dictionary.csv": // TODO
+		case "Dictionary.csv": // TODO unknown structure
+			if f.FileInfo().Size() != 0 {
+				return errors.New("non-empty Dictionary.csv: TODO support format")
+			}
 		default:
 			return fmt.Errorf("unknown file: %s", name)
 		}
