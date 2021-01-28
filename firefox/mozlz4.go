@@ -2,6 +2,7 @@ package firefox
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -20,13 +21,21 @@ func DecompressMozLz4(b []byte) ([]byte, error) {
 	}
 	size := binary.LittleEndian.Uint32(b[8:])
 
-	dst := make([]byte, size)
-	n, err := lz4.UncompressBlock(b[12:], dst)
+	data := make([]byte, size)
+	n, err := lz4.UncompressBlock(b[12:], data)
 	if err != nil {
 		return nil, fmt.Errorf("mozlz4: decompress: %w", err)
 	}
 	if n != int(size) {
 		return nil, fmt.Errorf("mozlz4: header size %d and decompressed size %d differ", size, n)
 	}
-	return dst, nil
+	return data, nil
+}
+
+func UnmarshalMozLz4Json(b []byte, v interface{}) error {
+	data, err := DecompressMozLz4(b)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, v)
 }
