@@ -52,13 +52,34 @@ func (t *UnixSec) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type UnixMilli struct{ time.Time }
+
+func (t UnixMilli) MarshalJSON() ([]byte, error) {
+	if t.IsZero() {
+		return []byte("0"), nil
+	}
+	return []byte(strconv.FormatInt(t.UnixNano()/1e6, 10)), nil
+}
+
+func (t *UnixMilli) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" || string(data) == "0" {
+		return nil
+	}
+	msec, err := strconv.ParseInt(string(data), 10, 64)
+	if err != nil {
+		return err
+	}
+	*t = UnixMilli{FromUnixMilli(msec)}
+	return nil
+}
+
 type UnixMicro struct{ time.Time }
 
 func (t UnixMicro) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
 		return []byte("0"), nil
 	}
-	return []byte(strconv.FormatInt(t.UnixNano()/1000, 10)), nil
+	return []byte(strconv.FormatInt(t.UnixNano()/1e3, 10)), nil
 }
 
 func (t *UnixMicro) UnmarshalJSON(data []byte) error {
