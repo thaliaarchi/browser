@@ -119,9 +119,5 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 }
 
 func parseNumber(e *goquery.Selection, attr string) (int64, error) {
-	v := e.AttrOr(attr, "0")
-	if v == "0" {
-		return 0, nil
-	}
-	return strconv.ParseInt(v, 10, 64)
+	return strconv.ParseInt(e.AttrOr(attr, "0"), 10, 64)
 }

@@ -10,7 +10,7 @@ import (
 type Chrome struct {
 	ExportTime time.Time `json:"-"`
 	// Autofill.json
-	Autofill        []AutofillProfile `json:"Autofill"` // Appears in older archives
+	Autofill        []AutofillProfile `json:"Autofill"` // Appears in older exports
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
 	// Bookmarks.html
 	Bookmarks []bookmark.BookmarkEntry
@@ -154,5 +154,6 @@ type PageOrdinal string
 
 // Known values for page_ordinal.
 const (
-	N PageOrdinal = "n"
+	PageOrdinalN PageOrdinal = "n"
+	PageOrdinalT PageOrdinal = "t"
 )

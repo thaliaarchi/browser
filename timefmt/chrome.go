@@ -19,9 +19,7 @@ func FromChromeMicro(usec int64) time.Time {
 }
 
 // ChromeMicro handles parsing of Chrome timestamps in JSON.
-type ChromeMicro struct {
-	time.Time
-}
+type ChromeMicro struct{ time.Time }
 
 func (t ChromeMicro) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
