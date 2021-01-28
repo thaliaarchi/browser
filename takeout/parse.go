@@ -1,135 +1,103 @@
 package takeout
 
 import (
-	"archive/tar"
-	"archive/zip"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
+	"time"
 
+	"github.com/andrewarchi/archive/archive"
 	"github.com/andrewarchi/archive/bookmark"
 )
 
-func ParseChromeTgz(filename string) (*Chrome, error) {
-	if !strings.HasSuffix(filename, "-001.tgz") {
-		return nil, fmt.Errorf("archive must end with -001.tgz: %s", filename)
+type Export struct {
+	Time  time.Time // time of export from filename
+	Ext   string    // zip or tgz
+	Parts []string  // paths to multi-part archives
+}
+
+var exportPattern = regexp.MustCompile(`^takeout-\d{8}T\d{6}Z-\d{3}\.(?:tgz|zip)$`)
+
+func Open(filename string) (*Export, error) {
+	base := filepath.Base(filename)
+	if !exportPattern.MatchString(base) {
+		return nil, fmt.Errorf("path is not an export: %s", base)
 	}
-	glob := strings.TrimSuffix(filename, "-001.tgz") + "-???.tgz"
+	timestamp := base[8:24]
+	seq := base[25:28]
+	ext := base[29:]
+	if seq != "001" {
+		return nil, fmt.Errorf("archive not first in sequence: %s", seq)
+	}
+	t, err := time.Parse("20060102T150405Z", timestamp)
+	if err != nil {
+		return nil, fmt.Errorf("archive timestamp: %w", err)
+	}
+	glob := filename[:len(filename)-len("-001.ext")] + "-???." + ext
 	parts, err := filepath.Glob(glob)
 	if err != nil {
 		return nil, err
 	}
-	var data Chrome
-	for _, part := range parts {
-		if err := parseTgzPart(part, &data); err != nil {
-			return nil, err
-		}
-	}
-	return &data, nil
+	return &Export{t, ext, parts}, nil
 }
 
-func parseTgzPart(filename string, data *Chrome) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
+func (ex *Export) Walk(walk archive.WalkFunc) error {
+	var walker func(string, archive.WalkFunc) error
+	switch ex.Ext {
+	case "zip":
+		walker = archive.WalkZip
+	case "tgz":
+		walker = archive.WalkTgz
+	default:
+		return fmt.Errorf("illegal extension: %s", ex.Ext)
 	}
-	defer f.Close()
-	gr, err := gzip.NewReader(f)
-	if err != nil {
-		return err
-	}
-	defer gr.Close()
-	tr := tar.NewReader(gr)
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		if header.Typeflag != tar.TypeReg ||
-			filepath.Dir(header.Name) != "Takeout/Chrome" {
-			continue
-		}
-		switch base := filepath.Base(header.Name); base {
-		case "Autofill.json", "BrowserHistory.json", "Extensions.json",
-			"SearchEngines.json", "SyncSettings.json":
-			d := json.NewDecoder(tr)
-			d.DisallowUnknownFields()
-			if err := d.Decode(data); err != nil {
-				return fmt.Errorf("%s: %w", base, err)
-			}
-		case "Bookmarks.html":
-			b, err := bookmark.ParseNetscape(tr)
-			if err != nil {
-				return fmt.Errorf("%s: %w", base, err)
-			}
-			data.Bookmarks = b
-		case "Dictionary.csv": // TODO
-		default:
-			log.Printf("Unknown Chrome file: %s/%s", filename, header.Name)
+	for _, part := range ex.Parts {
+		if err := walker(part, walk); err != nil {
+			return fmt.Errorf("takeout %s: %w", filepath.Base(part), err)
 		}
 	}
 	return nil
 }
 
-func ParseChromeZip(filename string) (*Chrome, error) {
-	if !strings.HasSuffix(filename, "-001.zip") {
-		return nil, fmt.Errorf("archive must end with -001.zip: %s", filename)
-	}
-	glob := strings.TrimSuffix(filename, "-001.zip") + "-???.zip"
-	parts, err := filepath.Glob(glob)
+func ParseChrome(filename string) (*Chrome, error) {
+	ex, err := Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	var data Chrome
-	for _, part := range parts {
-		if err := parseZipPart(part, &data); err != nil {
-			return nil, err
-		}
-	}
-	return &data, nil
-}
-
-func parseZipPart(filename string, data *Chrome) error {
-	zr, err := zip.OpenReader(filename)
-	if err != nil {
-		return err
-	}
-	defer zr.Close()
-	for _, f := range zr.File {
-		if filepath.Dir(f.Name) != "Takeout/Chrome" {
-			continue
+	data := &Chrome{ExportTime: ex.Time}
+	err = ex.Walk(func(f archive.File) error {
+		name := f.Name()
+		if filepath.Dir(name) != "Takeout/Chrome" {
+			return nil
 		}
 		r, err := f.Open()
 		if err != nil {
 			return err
 		}
 		defer r.Close()
-		switch base := filepath.Base(f.Name); base {
+		switch base := filepath.Base(name); base {
 		case "Autofill.json", "BrowserHistory.json", "Extensions.json",
 			"SearchEngines.json", "SyncSettings.json":
 			d := json.NewDecoder(r)
 			d.DisallowUnknownFields()
 			if err := d.Decode(data); err != nil {
-				return fmt.Errorf("%s: %w", base, err)
+				return err
 			}
 		case "Bookmarks.html":
 			b, err := bookmark.ParseNetscape(r)
 			if err != nil {
-				return fmt.Errorf("%s: %w", base, err)
+				return err
 			}
 			data.Bookmarks = b
 		case "Dictionary.csv": // TODO
 		default:
-			log.Printf("Unknown Chrome file: %s/%s", filename, f.Name)
+			return fmt.Errorf("unknown file: %s", name)
 		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return data, nil
 }

@@ -1,11 +1,14 @@
 package takeout
 
 import (
+	"time"
+
 	"github.com/andrewarchi/archive/bookmark"
 	"github.com/andrewarchi/archive/timefmt"
 )
 
 type Chrome struct {
+	ExportTime time.Time `json:"-"`
 	// Autofill.json
 	Autofill        []AutofillProfile `json:"Autofill"` // Appears in older archives
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
