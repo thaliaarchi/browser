@@ -18,9 +18,10 @@ type MimeType struct {
 // Scheme registers an action to perform for a URI scheme and a list of
 // handler applications.
 type Scheme struct {
-	Action   int              `json:"action"` // i.e. 2, 4
-	Ask      bool             `json:"ask,omitempty"`
-	Handlers []*SchemeHandler `json:"handlers,omitempty"`
+	Action    int              `json:"action"` // i.e. 2, 4
+	Ask       bool             `json:"ask,omitempty"`
+	StubEntry bool             `json:"stubEntry,omitempty"` // true when handler unchanged from default
+	Handlers  []*SchemeHandler `json:"handlers,omitempty"`
 }
 
 // SchemeHandler is an application that can handle a URI scheme.
