@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-ini/ini"
+	"gopkg.in/ini.v1"
 )
 
 // ProfilesDir returns the path for the Firefox Profiles directory.
