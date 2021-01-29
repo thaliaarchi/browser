@@ -1,12 +1,13 @@
-package firefox
+package jsonutil
 
 import (
 	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 
-	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/pierrec/lz4/v4"
 )
 
@@ -33,10 +34,32 @@ func DecompressMozLz4(b []byte) ([]byte, error) {
 	return data, nil
 }
 
-func UnmarshalMozLz4Json(b []byte, v interface{}) error {
+func UnmarshalMozLz4(b []byte, v interface{}) error {
 	data, err := DecompressMozLz4(b)
 	if err != nil {
 		return err
 	}
-	return jsonutil.Decode(bytes.NewReader(data), v)
+	return Decode(bytes.NewReader(data), v)
+}
+
+func DecodeMozLz4(r io.Reader, v interface{}) error {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	if err := UnmarshalMozLz4(b, v); err != nil {
+		return err
+	}
+	return nil
+}
+
+func DecodeMozLz4File(filename string, v interface{}) error {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	if err := UnmarshalMozLz4(b, v); err != nil {
+		return err
+	}
+	return nil
 }
