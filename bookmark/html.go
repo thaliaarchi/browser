@@ -17,6 +17,9 @@ import (
 // http://fileformats.archiveteam.org/wiki/Chrome_bookmarks
 // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa753582(v=vs.85)
 //
+// Firefox:
+// https://searchfox.org/mozilla-central/source/toolkit/components/places/BookmarkHTMLUtils.jsm
+//
 // Other services appear to use fields not used by
 // Chrome bookmarks in Google Takeout.
 
@@ -36,8 +39,8 @@ type Bookmark struct {
 	IconURI string
 }
 
-// ParseNetscape parses a Netscape-format bookmark file.
-func ParseNetscape(r io.Reader) ([]BookmarkEntry, error) {
+// ParseHTML parses a Netscape-style HTML bookmark file.
+func ParseHTML(r io.Reader) ([]BookmarkEntry, error) {
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, err
@@ -91,7 +94,7 @@ func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {
 func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 	var err error
 	children := dl.ChildrenFiltered("dt")
-	entries := make([]BookmarkEntry, children.Length())
+	entries := make([]BookmarkEntry, 0, children.Length())
 	children.EachWithBreak(func(_ int, dt *goquery.Selection) bool {
 		var e BookmarkEntry
 		a := dt.ChildrenFiltered("a").First()

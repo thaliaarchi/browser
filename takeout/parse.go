@@ -23,26 +23,24 @@ type Export struct {
 	Parts []string  // paths to multi-part archives
 }
 
-var exportPattern = regexp.MustCompile(`^takeout-\d{8}T\d{6}Z-\d{3}\.(?:tgz|zip)$`)
+var exportPattern = regexp.MustCompile(`^takeout-(\d{8}T\d{6}Z)-(\d{3})\.(tgz|zip)$`)
 
 // Open opens a Takeout export.
 func Open(filename string) (*Export, error) {
 	base := filepath.Base(filename)
-	if !exportPattern.MatchString(base) {
+	match := exportPattern.FindStringSubmatch(base)
+	if len(match) != 4 {
 		return nil, fmt.Errorf("takeout: path is not an export: %s", base)
 	}
-	timestamp := base[8:24]
-	seq := base[25:28]
-	ext := base[29:]
+	timestamp, seq, ext := match[1], match[2], match[3]
 	if seq != "001" {
 		return nil, fmt.Errorf("takeout: archive not first in sequence: %s", seq)
 	}
 	t, err := time.Parse("20060102T150405Z", timestamp)
 	if err != nil {
-		return nil, fmt.Errorf("takeout: archive timestamp: %w", err)
+		return nil, fmt.Errorf("takeout: export timestamp: %w", err)
 	}
-	glob := filename[:len(filename)-len("-001.ext")] + "-???." + ext
-	parts, err := filepath.Glob(glob)
+	parts, err := filepath.Glob("takeout-" + timestamp + "-???." + ext)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +89,7 @@ func ParseChrome(filename string) (*Chrome, error) {
 			"SearchEngines.json", "SyncSettings.json":
 			return jsonutil.Decode(r, data)
 		case "Bookmarks.html":
-			b, err := bookmark.ParseNetscape(r)
+			b, err := bookmark.ParseHTML(r)
 			if err != nil {
 				return err
 			}

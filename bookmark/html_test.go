@@ -12,7 +12,7 @@ func TestBookmarks(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer f.Close()
-	b, err := ParseNetscape(f)
+	b, err := ParseHTML(f)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,5 +21,4 @@ func TestBookmarks(t *testing.T) {
 	if err := e.Encode(b); err != nil {
 		t.Error(err)
 	}
-	t.Fail()
 }

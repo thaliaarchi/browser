@@ -37,9 +37,14 @@ type BookmarkBackupEntry struct {
 	URI          string                `json:"uri,omitempty"`
 }
 
+// TODO handle all kinds of entry types from Firefox source.
+
 // ParseBookmarkBackup parses a bookmarks file within bookmarkbackups in
 // a Firefox profile.
 func ParseBookmarkBackup(filename string) (*BookmarkBackup, error) {
+	// JSON bookmark backup serialization:
+	// https://searchfox.org/mozilla-central/source/toolkit/components/places/PlacesBackups.jsm#265
+
 	backup, err := GetBookmarkBackupMetadata(filename)
 	if err != nil {
 		return nil, err
@@ -65,8 +70,11 @@ func ParseBookmarkBackup(filename string) (*BookmarkBackup, error) {
 // https://searchfox.org/mozilla-central/source/toolkit/components/places/PlacesBackups.jsm#98
 var bookmarkBackupPattern = regexp.MustCompile(`^bookmarks-([0-9-]+)(?:_([0-9]+)){0,1}(?:_([A-Za-z0-9=+-]{24})){0,1}\.(json(?:lz4)?)$`)
 
+// TODO is the ordering -+ or +- ?
 var filepathBase64 = base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+") // padding =
 
+// GetBookmarkBackupMetadata reads the metadata from a bookmark backup
+// filename. The returned BookmarkBackup has nil Bookmarks.
 func GetBookmarkBackupMetadata(filename string) (*BookmarkBackup, error) {
 	base := filepath.Base(filename)
 	matches := bookmarkBackupPattern.FindStringSubmatch(base)
