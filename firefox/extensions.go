@@ -1,23 +1,18 @@
 package firefox
 
-import (
-	"encoding/json"
-	"os"
-
-	"github.com/andrewarchi/archive/timefmt"
-)
+import "github.com/andrewarchi/archive/timefmt"
 
 // ExtensionSettings contains preferences and commands set by extensions
 // in extension-settings.json.
 type ExtensionSettings struct {
 	Version              int                `json:"version"` // i.e. 2
 	Commands             map[string]Command `json:"commands"`
-	URLOverrides         interface{}        `json:"url_overrides"` // TODO unknown structure
+	URLOverrides         unknownObj         `json:"url_overrides"`
 	Prefs                map[string]Pref    `json:"prefs"`
-	DefaultSearch        interface{}        `json:"default_search"`       // TODO unknown structure
-	HomepageNotification interface{}        `json:"homepageNotification"` // TODO unknown structure
-	TabHideNotification  interface{}        `json:"tabHideNotification"`  // TODO unknown structure
-	NewTabNotification   interface{}        `json:"newTabNotification"`   // TODO unknown structure
+	DefaultSearch        unknownObj         `json:"default_search"`
+	HomepageNotification unknownObj         `json:"homepageNotification"`
+	TabHideNotification  unknownObj         `json:"tabHideNotification"`
+	NewTabNotification   unknownObj         `json:"newTabNotification"`
 }
 
 // Command is a command with values set by extensions.
@@ -77,7 +72,7 @@ type Addon struct {
 	SyncGUID               string                `json:"syncGUID"`
 	Version                string                `json:"version"` // Addon version
 	Type                   AddonType             `json:"type"`
-	Loader                 interface{}           `json:"loader"` // TODO unknown structure
+	Loader                 unknownType           `json:"loader"`
 	UpdateURL              string                `json:"updateURL"`
 	OptionsURL             string                `json:"optionsURL"`
 	OptionsType            int                   `json:"optionsType"`
@@ -101,7 +96,7 @@ type Addon struct {
 	StrictCompatibility    bool                  `json:"strictCompatibility"`
 	Locales                []Locale              `json:"locales"`
 	TargetApplications     []TargetApplication   `json:"targetApplications"`
-	TargetPlatforms        []interface{}         `json:"targetPlatforms"`       // TODO unknown structure
+	TargetPlatforms        []unknownType         `json:"targetPlatforms"`
 	SignedState            int                   `json:"signedState,omitempty"` // i.e. 2
 	SignedDate             timefmt.UnixMilli     `json:"signedDate"`
 	Seen                   bool                  `json:"seen"`
@@ -136,9 +131,9 @@ type Locale struct {
 	Description  string      `json:"description,omitempty"`
 	Creator      string      `json:"creator,omitempty"`
 	HomepageURL  string      `json:"homepageURL,omitempty"`
-	Developers   interface{} `json:"developers"`   // TODO unknown structure
-	Translators  interface{} `json:"translators"`  // TODO unknown structure
-	Contributors interface{} `json:"contributors"` // TODO unknown structure
+	Developers   unknownType `json:"developers"`
+	Translators  unknownType `json:"translators"`
+	Contributors unknownType `json:"contributors"`
 	Locales      []string    `json:"locales"`
 }
 
@@ -220,15 +215,4 @@ func ParseExtensions(filename string) (*Extensions, error) {
 		return nil, err
 	}
 	return &extensions, nil
-}
-
-func parseJSON(filename string, data interface{}) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	d := json.NewDecoder(f)
-	d.DisallowUnknownFields()
-	return d.Decode(data)
 }
