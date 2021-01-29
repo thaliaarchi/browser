@@ -3,7 +3,11 @@
 This library parses and converts data from Firefox- and Chromium-based
 browsers.
 
-## Firefox
+## Browsers
+
+### Firefox
+
+Firefox files currently parsed:
 
 - `Profiles/{profile}/addons.json`
 - `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.json`
@@ -17,21 +21,30 @@ browsers.
 - `installs.ini`
 - `profiles.ini`
 
-## Chrome
+#### Tor Browser
+
+No Tor Browser-specific data is currently parsed.
+
+### Chrome
+
+Chrome files currently parsed:
 
 - `{profile}/Bookmarks`
 - `First Run`
 
-### Google Takeout
+Google Takeout files currently parsed:
 
 - `Takeout/Chrome/Autofill.json`
 - `Takeout/Chrome/Bookmarks.html`
 - `Takeout/Chrome/BrowserHistory.json`
-- `Takeout/Chrome/Dictionary.csv` (TODO)
 - `Takeout/Chrome/Extensions.json`
 - `Takeout/Chrome/SearchEngines.json`
 - `Takeout/Chrome/SyncSettings.json`
 
-## Brave
+#### Brave
 
 No Brave-specific data is currently parsed.
+
+#### Edge (Chromium)
+
+No Edge-specific data is currently parsed.

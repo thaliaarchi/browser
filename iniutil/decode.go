@@ -13,11 +13,11 @@ import (
 func DecodeINIStrict(section *ini.Section, v interface{}) error {
 	typ := reflect.TypeOf(v)
 	if typ.Kind() != reflect.Ptr {
-		return errors.New("not a pointer to a struct")
+		return errors.New("ini: not a pointer to a struct")
 	}
 	typ = typ.Elem()
 	if typ.Kind() != reflect.Struct {
-		return errors.New("not a pointer to a struct")
+		return errors.New("ini: not a pointer to a struct")
 	}
 
 	for _, key := range section.KeyStrings() {

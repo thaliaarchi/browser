@@ -1,2 +1,5 @@
 *.json
+*.jsonlz4
 *.html
+*.csv
+*.ini
