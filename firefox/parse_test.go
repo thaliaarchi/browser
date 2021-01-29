@@ -1,6 +1,7 @@
 package firefox
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,24 +20,50 @@ func TestParse(t *testing.T) {
 		if fi, err := os.Stat(profile); err == nil && !fi.IsDir() {
 			continue
 		}
-		name := filepath.Base(profile)
-		if _, err := ParseContainers(profile + "/containers.json"); err != nil {
-			t.Errorf("%s/containers.json: %s", name, err)
+
+		addons := filepath.Join(profile, "addons.json")
+		_, err = ParseAddons(addons)
+		checkError(t, addons, err)
+
+		containers := filepath.Join(profile, "containers.json")
+		_, err = ParseContainers(containers)
+		checkError(t, containers, err)
+
+		extensions := filepath.Join(profile, "extensions.json")
+		_, err = ParseExtensions(extensions)
+		checkError(t, extensions, err)
+
+		extensionPreferences := filepath.Join(profile, "extension-preferences.json")
+		_, err = ParseExtensionPreferences(extensionPreferences)
+		checkError(t, extensionPreferences, err)
+
+		extensionSettings := filepath.Join(profile, "extension-settings.json")
+		_, err = ParseExtensionSettings(extensionSettings)
+		checkError(t, extensionSettings, err)
+
+		handlers := filepath.Join(profile, "handlers.json")
+		_, err = ParseHandlers(handlers)
+		checkError(t, handlers, err)
+
+		times := filepath.Join(profile, "times.json")
+		_, err = ParseTimes(times)
+		checkError(t, times, err)
+
+		bookmarkBackups, err := filepath.Glob(filepath.Join(profile, "bookmarkbackups", "bookmarks-*.jsonlz4"))
+		if err != nil {
+			t.Error(err)
+			continue
 		}
-		if _, err := ParseExtensions(profile + "/extensions.json"); err != nil {
-			t.Errorf("%s/extensions.json: %s", name, err)
+		for _, bookmarkBackup := range bookmarkBackups {
+			_, err = ParseBookmarkBackup(bookmarkBackup)
+			checkError(t, bookmarkBackup, err)
 		}
-		if _, err := ParseExtensionPreferences(profile + "/extension-preferences.json"); err != nil {
-			t.Errorf("%s/extension-preferences.json: %s", name, err)
-		}
-		if _, err := ParseExtensionSettings(profile + "/extension-settings.json"); err != nil {
-			t.Errorf("%s/extension-settings.json: %s", name, err)
-		}
-		if _, err := ParseHandlers(profile + "/handlers.json"); err != nil {
-			t.Errorf("%s/handlers.json: %s", name, err)
-		}
-		if _, err := ParseTimes(profile + "/times.json"); err != nil {
-			t.Errorf("%s/times.json: %s", name, err)
-		}
+	}
+}
+
+func checkError(t *testing.T, filename string, err error) {
+	t.Helper()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("%s: %s", filename, err)
 	}
 }

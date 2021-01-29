@@ -52,7 +52,7 @@ func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 // extension in extension-preferences.json.
 type ExtensionPermissions struct {
 	Permissions []string `json:"permissions"` // i.e. "clipboardWrite" or "internal:privateBrowsingAllowed"
-	Origins     []string `json:"origins"`     // Origins given access to
+	Origins     []string `json:"origins"`     // origins given access to
 }
 
 // ParseExtensionPreferences parses extension-preferences.json in a
@@ -71,10 +71,10 @@ type Extensions struct {
 }
 
 type Addon struct {
-	ID                     string                 `json:"id"` // ID or GUID
-	SyncGUID               string                 `json:"syncGUID"`
-	Version                string                 `json:"version"` // Addon version
-	Type                   string                 `json:"type"`    // "extension", "theme", "locale", "dictionary"
+	ID                     string                 `json:"id"`       // ID "addon@example.com" or GUID "{01234567-89ab-cdef-0123-456789abcdef}"
+	SyncGUID               string                 `json:"syncGUID"` // GUID "{01234567-89ab-cdef-0123-456789abcdef}"
+	Version                string                 `json:"version"`  // addon version
+	Type                   string                 `json:"type"`     // "extension", "theme", "locale", "dictionary"
 	Loader                 jsonutil.UnknownType   `json:"loader"`
 	UpdateURL              string                 `json:"updateURL"`
 	OptionsURL             string                 `json:"optionsURL"`
@@ -107,7 +107,7 @@ type Addon struct {
 	Incognito              string                 `json:"incognito,omitempty"` // i.e. "not_allowed", "spanning"
 	UserPermissions        *ExtensionPermissions  `json:"userPermissions"`
 	OptionalPermissions    *ExtensionPermissions  `json:"optionalPermissions"`
-	Icons                  map[int]string         `json:"icons"` // Sized icon paths
+	Icons                  map[int]string         `json:"icons"` // key: icon size, value: path
 	IconURL                string                 `json:"iconURL"`
 	BlocklistState         int                    `json:"blocklistState"` // i.e. 2
 	BlocklistURL           string                 `json:"blocklistURL"`
@@ -132,13 +132,13 @@ type Locale struct {
 }
 
 type TargetApplication struct {
-	ID         string `json:"id"`
+	ID         string `json:"id"` // i.e. "toolkit@mozilla.org"
 	MinVersion string `json:"minVersion"`
 	MaxVersion string `json:"maxVersion"`
 }
 
 type StartupData struct {
-	Dictionaries        map[string]string    `json:"dictionaries,omitempty"` // key: locale, value: path
+	Dictionaries        map[string]string    `json:"dictionaries,omitempty"` // key: locale, value: path to .dic
 	ChromeEntries       [][]string           `json:"chromeEntries"`
 	LangpackID          string               `json:"langpackId,omitempty"`
 	L10nRegistrySources *L10nRegistrySources `json:"l10nRegistrySources,omitempty"`

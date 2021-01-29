@@ -68,6 +68,15 @@ type Install struct {
 	Locked  bool
 }
 
+// AbsPath returns the absolute to the profile, relative to the firefox
+// root.
+func (p *Profile) AbsPath(firefoxDir string) string {
+	if p.IsRelative {
+		return filepath.Clean(filepath.Join(firefoxDir, p.Path))
+	}
+	return p.Path
+}
+
 // ParseProfiles parses profiles.ini in the Firefox root.
 func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 	filename := filepath.Join(firefoxDir, "profiles.ini")
