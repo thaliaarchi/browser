@@ -1,5 +1,7 @@
 package firefox
 
+import "github.com/andrewarchi/browser/jsonutil"
+
 // Handlers registers handlers for MIME types and URI schemes.
 type Handlers struct {
 	DefaultHandlersVersion map[string]int      `json:"defaultHandlersVersion"` // key: locale (i.e. "en-US")
@@ -34,7 +36,7 @@ type SchemeHandler struct {
 // ParseHandlers parses the handlers.json file in a Firefox profile.
 func ParseHandlers(filename string) (*Handlers, error) {
 	var handlers Handlers
-	if err := parseJSON(filename, &handlers); err != nil {
+	if err := jsonutil.Decode(filename, &handlers); err != nil {
 		return nil, err
 	}
 	return &handlers, nil

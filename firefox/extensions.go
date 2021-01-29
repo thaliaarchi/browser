@@ -1,18 +1,21 @@
 package firefox
 
-import "github.com/andrewarchi/browser/timefmt"
+import (
+	"github.com/andrewarchi/browser/jsonutil"
+	"github.com/andrewarchi/browser/jsonutil/timefmt"
+)
 
 // ExtensionSettings contains preferences and commands set by extensions
 // in extension-settings.json.
 type ExtensionSettings struct {
-	Version              int                `json:"version"` // i.e. 2
-	Commands             map[string]Command `json:"commands"`
-	URLOverrides         unknownObj         `json:"url_overrides"`
-	Prefs                map[string]Pref    `json:"prefs"`
-	DefaultSearch        unknownObj         `json:"default_search"`
-	HomepageNotification unknownObj         `json:"homepageNotification"`
-	TabHideNotification  unknownObj         `json:"tabHideNotification"`
-	NewTabNotification   unknownObj         `json:"newTabNotification"`
+	Version              int                 `json:"version"` // i.e. 2
+	Commands             map[string]Command  `json:"commands"`
+	URLOverrides         jsonutil.UnknownObj `json:"url_overrides"`
+	Prefs                map[string]Pref     `json:"prefs"`
+	DefaultSearch        jsonutil.UnknownObj `json:"default_search"`
+	HomepageNotification jsonutil.UnknownObj `json:"homepageNotification"`
+	TabHideNotification  jsonutil.UnknownObj `json:"tabHideNotification"`
+	NewTabNotification   jsonutil.UnknownObj `json:"newTabNotification"`
 }
 
 // Command is a command with values set by extensions.
@@ -39,7 +42,7 @@ type ExtensionSetting struct {
 // Firefox profile.
 func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 	var settings ExtensionSettings
-	if err := parseJSON(filename, &settings); err != nil {
+	if err := jsonutil.Decode(filename, &settings); err != nil {
 		return nil, err
 	}
 	return &settings, nil
@@ -56,7 +59,7 @@ type ExtensionPermissions struct {
 // in a Firefox profile.
 func ParseExtensionPreferences(filename string) (map[string]ExtensionPermissions, error) {
 	var prefs map[string]ExtensionPermissions
-	if err := parseJSON(filename, &prefs); err != nil {
+	if err := jsonutil.Decode(filename, &prefs); err != nil {
 		return nil, err
 	}
 	return prefs, nil
@@ -68,52 +71,52 @@ type Extensions struct {
 }
 
 type Addon struct {
-	ID                     string                `json:"id"` // ID or GUID
-	SyncGUID               string                `json:"syncGUID"`
-	Version                string                `json:"version"` // Addon version
-	Type                   AddonType             `json:"type"`
-	Loader                 unknownType           `json:"loader"`
-	UpdateURL              string                `json:"updateURL"`
-	OptionsURL             string                `json:"optionsURL"`
-	OptionsType            int                   `json:"optionsType"`
-	OptionsBrowserStyle    bool                  `json:"optionsBrowserStyle"`
-	AboutURL               string                `json:"aboutURL"`
-	DefaultLocale          Locale                `json:"defaultLocale"`
-	Visible                bool                  `json:"visible"`
-	Active                 bool                  `json:"active"`
-	UserDisabled           bool                  `json:"userDisabled"`
-	AppDisabled            bool                  `json:"appDisabled"`
-	EmbedderDisabled       bool                  `json:"embedderDisabled"`
-	InstallDate            int64                 `json:"installDate"`
-	UpdateDate             timefmt.UnixMilli     `json:"updateDate,omitempty"`
-	ApplyBackgroundUpdates interface{}           `json:"applyBackgroundUpdates"` // i.e. 1 or "1"
-	Path                   string                `json:"path"`
-	Skinnable              bool                  `json:"skinnable"`
-	SourceURI              string                `json:"sourceURI"`
-	ReleaseNotesURI        string                `json:"releaseNotesURI"`
-	SoftDisabled           bool                  `json:"softDisabled"`
-	ForeignInstall         bool                  `json:"foreignInstall"`
-	StrictCompatibility    bool                  `json:"strictCompatibility"`
-	Locales                []Locale              `json:"locales"`
-	TargetApplications     []TargetApplication   `json:"targetApplications"`
-	TargetPlatforms        []unknownType         `json:"targetPlatforms"`
-	SignedState            int                   `json:"signedState,omitempty"` // i.e. 2
-	SignedDate             timefmt.UnixMilli     `json:"signedDate"`
-	Seen                   bool                  `json:"seen"`
-	Dependencies           []interface{}         `json:"dependencies"`
-	Incognito              Incognito             `json:"incognito,omitempty"`
-	UserPermissions        *ExtensionPermissions `json:"userPermissions"`
-	OptionalPermissions    *ExtensionPermissions `json:"optionalPermissions"`
-	Icons                  map[int]string        `json:"icons"` // Sized icon paths
-	IconURL                string                `json:"iconURL"`
-	BlocklistState         int                   `json:"blocklistState"` // i.e. 2
-	BlocklistURL           string                `json:"blocklistURL"`
-	StartupData            *StartupData          `json:"startupData"`
-	Hidden                 bool                  `json:"hidden"`
-	InstallTelemetryInfo   *InstallTelemetryInfo `json:"installTelemetryInfo"`
-	RecommendationState    *RecommendationState  `json:"recommendationState"`
-	RootURI                string                `json:"rootURI"`
-	Location               Location              `json:"location"`
+	ID                     string                 `json:"id"` // ID or GUID
+	SyncGUID               string                 `json:"syncGUID"`
+	Version                string                 `json:"version"` // Addon version
+	Type                   AddonType              `json:"type"`
+	Loader                 jsonutil.UnknownType   `json:"loader"`
+	UpdateURL              string                 `json:"updateURL"`
+	OptionsURL             string                 `json:"optionsURL"`
+	OptionsType            int                    `json:"optionsType"`
+	OptionsBrowserStyle    bool                   `json:"optionsBrowserStyle"`
+	AboutURL               string                 `json:"aboutURL"`
+	DefaultLocale          Locale                 `json:"defaultLocale"`
+	Visible                bool                   `json:"visible"`
+	Active                 bool                   `json:"active"`
+	UserDisabled           bool                   `json:"userDisabled"`
+	AppDisabled            bool                   `json:"appDisabled"`
+	EmbedderDisabled       bool                   `json:"embedderDisabled"`
+	InstallDate            int64                  `json:"installDate"`
+	UpdateDate             timefmt.UnixMilli      `json:"updateDate,omitempty"`
+	ApplyBackgroundUpdates interface{}            `json:"applyBackgroundUpdates"` // i.e. 1 or "1"
+	Path                   string                 `json:"path"`
+	Skinnable              bool                   `json:"skinnable"`
+	SourceURI              string                 `json:"sourceURI"`
+	ReleaseNotesURI        string                 `json:"releaseNotesURI"`
+	SoftDisabled           bool                   `json:"softDisabled"`
+	ForeignInstall         bool                   `json:"foreignInstall"`
+	StrictCompatibility    bool                   `json:"strictCompatibility"`
+	Locales                []Locale               `json:"locales"`
+	TargetApplications     []TargetApplication    `json:"targetApplications"`
+	TargetPlatforms        []jsonutil.UnknownType `json:"targetPlatforms"`
+	SignedState            int                    `json:"signedState,omitempty"` // i.e. 2
+	SignedDate             timefmt.UnixMilli      `json:"signedDate"`
+	Seen                   bool                   `json:"seen"`
+	Dependencies           []interface{}          `json:"dependencies"`
+	Incognito              Incognito              `json:"incognito,omitempty"`
+	UserPermissions        *ExtensionPermissions  `json:"userPermissions"`
+	OptionalPermissions    *ExtensionPermissions  `json:"optionalPermissions"`
+	Icons                  map[int]string         `json:"icons"` // Sized icon paths
+	IconURL                string                 `json:"iconURL"`
+	BlocklistState         int                    `json:"blocklistState"` // i.e. 2
+	BlocklistURL           string                 `json:"blocklistURL"`
+	StartupData            *StartupData           `json:"startupData"`
+	Hidden                 bool                   `json:"hidden"`
+	InstallTelemetryInfo   *InstallTelemetryInfo  `json:"installTelemetryInfo"`
+	RecommendationState    *RecommendationState   `json:"recommendationState"`
+	RootURI                string                 `json:"rootURI"`
+	Location               Location               `json:"location"`
 }
 
 type AddonType string
@@ -127,14 +130,14 @@ const (
 
 // Locale contains addon information in a locale.
 type Locale struct {
-	Name         string      `json:"name"` // Addon name
-	Description  string      `json:"description,omitempty"`
-	Creator      string      `json:"creator,omitempty"`
-	HomepageURL  string      `json:"homepageURL,omitempty"`
-	Developers   unknownType `json:"developers"`
-	Translators  unknownType `json:"translators"`
-	Contributors unknownType `json:"contributors"`
-	Locales      []string    `json:"locales"`
+	Name         string               `json:"name"` // Addon name
+	Description  string               `json:"description,omitempty"`
+	Creator      string               `json:"creator,omitempty"`
+	HomepageURL  string               `json:"homepageURL,omitempty"`
+	Developers   jsonutil.UnknownType `json:"developers"`
+	Translators  jsonutil.UnknownType `json:"translators"`
+	Contributors jsonutil.UnknownType `json:"contributors"`
+	Locales      []string             `json:"locales"`
 }
 
 type TargetApplication struct {
@@ -211,7 +214,7 @@ const (
 // ParseExtensions parses the extensions.json file in a Firefox profile.
 func ParseExtensions(filename string) (*Extensions, error) {
 	var extensions Extensions
-	if err := parseJSON(filename, &extensions); err != nil {
+	if err := jsonutil.Decode(filename, &extensions); err != nil {
 		return nil, err
 	}
 	return &extensions, nil

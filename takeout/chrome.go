@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/andrewarchi/browser/bookmark"
-	"github.com/andrewarchi/browser/timefmt"
+	"github.com/andrewarchi/browser/jsonutil/timefmt"
 )
 
 type Chrome struct {

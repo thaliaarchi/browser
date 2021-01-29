@@ -1,5 +1,7 @@
 package firefox
 
+import "github.com/andrewarchi/browser/jsonutil"
+
 // Containers contains containers contained in containers.json.
 type Containers struct {
 	Version           int64               `json:"version"` // i.e. 4
@@ -22,7 +24,7 @@ type ContainerIdentity struct {
 // ParseContainers parses the containers.json file in a Firefox profile.
 func ParseContainers(filename string) (*Containers, error) {
 	var containers Containers
-	if err := parseJSON(filename, &containers); err != nil {
+	if err := jsonutil.Decode(filename, &containers); err != nil {
 		return nil, err
 	}
 	return &containers, nil

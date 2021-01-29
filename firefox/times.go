@@ -1,6 +1,9 @@
 package firefox
 
-import "github.com/andrewarchi/browser/timefmt"
+import (
+	"github.com/andrewarchi/browser/jsonutil"
+	"github.com/andrewarchi/browser/jsonutil/timefmt"
+)
 
 // Times contains installation times in times.json.
 type Times struct {
@@ -11,7 +14,7 @@ type Times struct {
 // ParseTimes parses the times.json file in a Firefox profile.
 func ParseTimes(filename string) (*Times, error) {
 	var times Times
-	if err := parseJSON(filename, &times); err != nil {
+	if err := jsonutil.Decode(filename, &times); err != nil {
 		return nil, err
 	}
 	return &times, nil

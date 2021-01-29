@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/andrewarchi/browser/timefmt"
+	"github.com/andrewarchi/browser/jsonutil/timefmt"
 	"golang.org/x/net/html"
 )
 
