@@ -47,7 +47,7 @@ func ParseNetscape(r io.Reader) ([]BookmarkEntry, error) {
 	}
 	dl := doc.Find("body > dl")
 	if dl.Length() != 1 {
-		return nil, fmt.Errorf("root has %d lists", dl.Length())
+		return nil, fmt.Errorf("bookmark: root has %d lists", dl.Length())
 	}
 	entries, err := parseFolderList(dl)
 	if err != nil {
@@ -60,12 +60,12 @@ func checkDoctype(doc *goquery.Document, doctype string) error {
 	for n := doc.Nodes[0].FirstChild; n != nil; n = n.NextSibling {
 		if n.Type == html.DoctypeNode {
 			if n.Data != doctype {
-				return fmt.Errorf("illegal doctype: %s", n.Data)
+				return fmt.Errorf("bookmark: illegal doctype: %s", n.Data)
 			}
 			return nil
 		}
 	}
-	return errors.New("doctype not found")
+	return errors.New("bookmark: doctype not found")
 }
 
 func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {

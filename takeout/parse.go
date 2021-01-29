@@ -1,3 +1,5 @@
+// Package takeout traverses and parses Google Takeout exports.
+//
 package takeout
 
 import (
@@ -12,6 +14,9 @@ import (
 	"github.com/andrewarchi/browser/jsonutil"
 )
 
+// Export contains the paths to each part in a Takeout export and the
+// time of export. Zip exports are significantly faster to traverse than
+// tgz and should be preferred.
 type Export struct {
 	Time  time.Time // time of export from filename
 	Ext   string    // zip or tgz
@@ -20,20 +25,21 @@ type Export struct {
 
 var exportPattern = regexp.MustCompile(`^takeout-\d{8}T\d{6}Z-\d{3}\.(?:tgz|zip)$`)
 
+// Open opens a Takeout export.
 func Open(filename string) (*Export, error) {
 	base := filepath.Base(filename)
 	if !exportPattern.MatchString(base) {
-		return nil, fmt.Errorf("path is not an export: %s", base)
+		return nil, fmt.Errorf("takeout: path is not an export: %s", base)
 	}
 	timestamp := base[8:24]
 	seq := base[25:28]
 	ext := base[29:]
 	if seq != "001" {
-		return nil, fmt.Errorf("archive not first in sequence: %s", seq)
+		return nil, fmt.Errorf("takeout: archive not first in sequence: %s", seq)
 	}
 	t, err := time.Parse("20060102T150405Z", timestamp)
 	if err != nil {
-		return nil, fmt.Errorf("archive timestamp: %w", err)
+		return nil, fmt.Errorf("takeout: archive timestamp: %w", err)
 	}
 	glob := filename[:len(filename)-len("-001.ext")] + "-???." + ext
 	parts, err := filepath.Glob(glob)
@@ -43,6 +49,8 @@ func Open(filename string) (*Export, error) {
 	return &Export{t, ext, parts}, nil
 }
 
+// Walk traverses a Takeout export and executes the given walk function
+// on each file.
 func (ex *Export) Walk(walk archive.WalkFunc) error {
 	var walker func(string, archive.WalkFunc) error
 	switch ex.Ext {
@@ -51,16 +59,17 @@ func (ex *Export) Walk(walk archive.WalkFunc) error {
 	case "tgz":
 		walker = archive.WalkTgz
 	default:
-		return fmt.Errorf("illegal extension: %s", ex.Ext)
+		return fmt.Errorf("takeout: illegal extension: %s", ex.Ext)
 	}
 	for _, part := range ex.Parts {
 		if err := walker(part, walk); err != nil {
-			return fmt.Errorf("takeout %s: %w", filepath.Base(part), err)
+			return err
 		}
 	}
 	return nil
 }
 
+// ParseChrome parses the Chrome data in a Takeout export.
 func ParseChrome(filename string) (*Chrome, error) {
 	ex, err := Open(filename)
 	if err != nil {
@@ -89,10 +98,10 @@ func ParseChrome(filename string) (*Chrome, error) {
 			data.Bookmarks = b
 		case "Dictionary.csv": // TODO unknown structure
 			if f.FileInfo().Size() != 0 {
-				return errors.New("non-empty Dictionary.csv: TODO support format")
+				return errors.New("dictionary structure unknown")
 			}
 		default:
-			return fmt.Errorf("unknown file: %s", name)
+			return errors.New("unknown file")
 		}
 		return nil
 	})

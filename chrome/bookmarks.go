@@ -22,7 +22,7 @@ type BookmarkRoots struct {
 
 // BookmarkEntry is either a folder containing further entries or a URL.
 type BookmarkEntry struct {
-	Children     []BookmarkEntry      `json:"children"`
+	Children     []BookmarkEntry      `json:"children"` // for folder type only
 	DateAdded    timefmt.QuotedChrome `json:"date_added"`
 	DateModified timefmt.QuotedChrome `json:"date_modified,omitempty"` // for folder type only
 	GUID         string               `json:"guid"`                    // i.e. "01234567-89ab-cdef-0123-456789abcdef"

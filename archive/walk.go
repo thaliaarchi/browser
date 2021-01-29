@@ -39,7 +39,7 @@ func WalkZip(filename string, walk WalkFunc) error {
 	defer zr.Close()
 	for _, f := range zr.File {
 		if err := walk(zipFile{f}); err != nil {
-			return fmt.Errorf("walk %s:%s: %w", filename, f.Name, err)
+			return fmt.Errorf("archive: walk %s:%s: %w", filename, f.Name, err)
 		}
 	}
 	return nil
@@ -96,7 +96,7 @@ func walkTar(r io.Reader, filename string, walk WalkFunc) error {
 			continue
 		}
 		if err := walk(tarFile{tr, header}); err != nil {
-			return fmt.Errorf("walk %s:%s: %w", filename, header.Name, err)
+			return fmt.Errorf("archive: walk %s:%s: %w", filename, header.Name, err)
 		}
 	}
 	return nil

@@ -115,26 +115,15 @@ type SearchEngine struct {
 	SearchTermsReplacementKey   *string        `json:"search_terms_replacement_key,omitempty"`
 	DeprecatedShowInDefaultList *bool          `json:"deprecated_show_in_default_list,omitempty"`
 	SyncGUID                    string         `json:"sync_guid"`
-	InputEncodings              InputEncodings `json:"input_encodings"`
+	InputEncodings              string         `json:"input_encodings"` // i.e. "UTF-8"
 	AlternateUrls               []string       `json:"alternate_urls,omitempty"`
 	PrepopulateID               int64          `json:"prepopulate_id"`
 }
 
-type InputEncodings string
-
-// Known values for input_encodings.
-const (
-	EncodingEmpty       InputEncodings = ""
-	EncodingUTF8        InputEncodings = "UTF-8"
-	EncodingISO88591    InputEncodings = "ISO-8859-1"
-	EncodingWindows1252 InputEncodings = "windows-1252"
-	EncodingInput       InputEncodings = "inputEncoding"
-)
-
 type App struct {
-	AppLaunchOrdinal string      `json:"app_launch_ordinal"`
-	Extension        Extension   `json:"extension"`
-	PageOrdinal      PageOrdinal `json:"page_ordinal"`
+	AppLaunchOrdinal string    `json:"app_launch_ordinal"`
+	Extension        Extension `json:"extension"`
+	PageOrdinal      string    `json:"page_ordinal"` // i.e. "n", "t"
 }
 
 type AppSetting struct {
@@ -150,11 +139,3 @@ type Theme struct {
 	UseSystemThemeByDefault bool `json:"use_system_theme_by_default"`
 	UseCustomTheme          bool `json:"use_custom_theme"`
 }
-
-type PageOrdinal string
-
-// Known values for page_ordinal.
-const (
-	PageOrdinalN PageOrdinal = "n"
-	PageOrdinalT PageOrdinal = "t"
-)

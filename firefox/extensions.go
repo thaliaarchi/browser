@@ -74,7 +74,7 @@ type Addon struct {
 	ID                     string                 `json:"id"` // ID or GUID
 	SyncGUID               string                 `json:"syncGUID"`
 	Version                string                 `json:"version"` // Addon version
-	Type                   AddonType              `json:"type"`
+	Type                   string                 `json:"type"`    // "extension", "theme", "locale", "dictionary"
 	Loader                 jsonutil.UnknownType   `json:"loader"`
 	UpdateURL              string                 `json:"updateURL"`
 	OptionsURL             string                 `json:"optionsURL"`
@@ -104,7 +104,7 @@ type Addon struct {
 	SignedDate             timefmt.UnixMilli      `json:"signedDate"`
 	Seen                   bool                   `json:"seen"`
 	Dependencies           []interface{}          `json:"dependencies"`
-	Incognito              Incognito              `json:"incognito,omitempty"`
+	Incognito              string                 `json:"incognito,omitempty"` // i.e. "not_allowed", "spanning"
 	UserPermissions        *ExtensionPermissions  `json:"userPermissions"`
 	OptionalPermissions    *ExtensionPermissions  `json:"optionalPermissions"`
 	Icons                  map[int]string         `json:"icons"` // Sized icon paths
@@ -116,17 +116,8 @@ type Addon struct {
 	InstallTelemetryInfo   *InstallTelemetryInfo  `json:"installTelemetryInfo"`
 	RecommendationState    *RecommendationState   `json:"recommendationState"`
 	RootURI                string                 `json:"rootURI"`
-	Location               Location               `json:"location"`
+	Location               string                 `json:"location"` // i.e. "app-builtin"
 }
-
-type AddonType string
-
-const (
-	AddonTypeExtension  AddonType = "extension"
-	AddonTypeTheme      AddonType = "theme"
-	AddonTypeLocale     AddonType = "locale"
-	AddonTypeDictionary AddonType = "dictionary"
-)
 
 // Locale contains addon information in a locale.
 type Locale struct {
@@ -146,15 +137,8 @@ type TargetApplication struct {
 	MaxVersion string `json:"maxVersion"`
 }
 
-type Incognito string
-
-const (
-	IncognitoNotAllowed Incognito = "not_allowed"
-	IncognitoSpanning   Incognito = "spanning"
-)
-
 type StartupData struct {
-	Dictionaries        map[string]string    `json:"dictionaries,omitempty"` // locale key, path value
+	Dictionaries        map[string]string    `json:"dictionaries,omitempty"` // key: locale, value: path
 	ChromeEntries       [][]string           `json:"chromeEntries"`
 	LangpackID          string               `json:"langpackId,omitempty"`
 	L10nRegistrySources *L10nRegistrySources `json:"l10nRegistrySources,omitempty"`
@@ -167,49 +151,16 @@ type L10nRegistrySources struct {
 }
 
 type InstallTelemetryInfo struct {
-	Source    Source `json:"source"`
-	Method    Method `json:"method,omitempty"`
+	Source    string `json:"source"`           // i.e. "app-system-local"
+	Method    string `json:"method,omitempty"` // i.e. "sideload"
 	SourceURL string `json:"sourceURL,omitempty"`
 }
-
-type Source string
-
-const (
-	SourceAboutPreferences     Source = "about:preferences"
-	SourceAmo                  Source = "amo"
-	SourceDisco                Source = "disco"
-	SourceSourceAppSystemLocal Source = "app-system-local"
-)
-
-type Method string
-
-const (
-	MethodAmWebAPI Method = "amWebAPI"
-	MethodSideload Method = "sideload"
-)
 
 type RecommendationState struct {
 	ValidNotAfter  timefmt.UnixMilli `json:"validNotAfter"`
 	ValidNotBefore timefmt.UnixMilli `json:"validNotBefore"`
-	States         []State           `json:"states"`
+	States         []string          `json:"states"` // i.e. "line"
 }
-
-type State string
-
-const (
-	StateLine               State = "line"
-	StateRecommended        State = "recommended"
-	StateRecommendedAndroid State = "recommended-android"
-)
-
-type Location string
-
-const (
-	LocationAppBuiltin        Location = "app-builtin"
-	LocationAppProfile        Location = "app-profile"
-	LocationAppSystemDefaults Location = "app-system-defaults"
-	LocationAppSystemLocal    Location = "app-system-local"
-)
 
 // ParseExtensions parses the extensions.json file in a Firefox profile.
 func ParseExtensions(filename string) (*Extensions, error) {

@@ -13,24 +13,13 @@ type BookmarkBackup struct {
 	DateAdded    timefmt.UnixMicro `json:"dateAdded"`
 	LastModified timefmt.UnixMicro `json:"lastModified"`
 	ID           int64             `json:"id"`
-	TypeCode     int               `json:"typeCode"`
-	Type         BookmarkType      `json:"type"`
+	TypeCode     int               `json:"typeCode"` // place: 1, place-container: 2
+	Type         string            `json:"type"`     // "text/x-moz-place", "text/x-moz-place-container"
 	Root         string            `json:"root,omitempty"`
 	Children     []BookmarkBackup  `json:"children,omitempty"`
 	IconURI      string            `json:"iconuri,omitempty"`
 	URI          string            `json:"uri,omitempty"`
 }
-
-type BookmarkTypeCode int
-type BookmarkType string
-
-const (
-	PlaceCode          BookmarkTypeCode = 1
-	PlaceContainerCode BookmarkTypeCode = 2
-
-	Place          BookmarkType = "text/x-moz-place"
-	PlaceContainer BookmarkType = "text/x-moz-place-container"
-)
 
 func ParseBookmarkBackup(filename string) (*BookmarkBackup, error) {
 	b, err := ioutil.ReadFile(filename)
