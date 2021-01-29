@@ -33,7 +33,7 @@ type SchemeHandler struct {
 	URITemplate string `json:"uriTemplate,omitempty"` // for web apps
 }
 
-// ParseHandlers parses the handlers.json file in a Firefox profile.
+// ParseHandlers parses handlers.json in a Firefox profile.
 func ParseHandlers(filename string) (*Handlers, error) {
 	var handlers Handlers
 	if err := jsonutil.DecodeFile(filename, &handlers); err != nil {

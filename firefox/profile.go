@@ -68,7 +68,7 @@ type Install struct {
 	Locked  bool
 }
 
-// ParseProfiles parses the profiles.ini in the Firefox root.
+// ParseProfiles parses profiles.ini in the Firefox root.
 func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 	filename := filepath.Join(firefoxDir, "profiles.ini")
 	f, err := ini.Load(filename)
@@ -110,7 +110,7 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 	return &info, nil
 }
 
-// ParseInstalls parses the installs.ini in the Firefox root.
+// ParseInstalls parses installs.ini in the Firefox root.
 func ParseInstalls(firefoxDir string) ([]Install, error) {
 	filename := filepath.Join(firefoxDir, "installs.ini")
 	f, err := ini.Load(filename)

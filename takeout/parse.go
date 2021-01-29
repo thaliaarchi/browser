@@ -69,7 +69,7 @@ func (ex *Export) Walk(walk archive.WalkFunc) error {
 	return nil
 }
 
-// ParseChrome parses the Chrome data in a Takeout export.
+// ParseChrome parses Chrome data in a Takeout export.
 func ParseChrome(filename string) (*Chrome, error) {
 	ex, err := Open(filename)
 	if err != nil {

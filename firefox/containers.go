@@ -21,7 +21,7 @@ type ContainerIdentity struct {
 	Name          string `json:"name,omitempty"`
 }
 
-// ParseContainers parses the containers.json file in a Firefox profile.
+// ParseContainers parses containers.json in a Firefox profile.
 func ParseContainers(filename string) (*Containers, error) {
 	var containers Containers
 	if err := jsonutil.DecodeFile(filename, &containers); err != nil {

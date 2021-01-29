@@ -38,8 +38,8 @@ type ExtensionSetting struct {
 	Enabled     bool              `json:"enabled"`
 }
 
-// ParseExtensionSettings parses the extension-settings.json file in a
-// Firefox profile.
+// ParseExtensionSettings parses extension-settings.json in a Firefox
+// profile.
 func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 	var settings ExtensionSettings
 	if err := jsonutil.DecodeFile(filename, &settings); err != nil {
@@ -55,8 +55,8 @@ type ExtensionPermissions struct {
 	Origins     []string `json:"origins"`     // Origins given access to
 }
 
-// ParseExtensionPreferences parses the extension-preferences.json file
-// in a Firefox profile.
+// ParseExtensionPreferences parses extension-preferences.json in a
+// Firefox profile.
 func ParseExtensionPreferences(filename string) (map[string]ExtensionPermissions, error) {
 	var prefs map[string]ExtensionPermissions
 	if err := jsonutil.DecodeFile(filename, &prefs); err != nil {
@@ -162,7 +162,7 @@ type RecommendationState struct {
 	States         []string          `json:"states"` // i.e. "line"
 }
 
-// ParseExtensions parses the extensions.json file in a Firefox profile.
+// ParseExtensions parses extensions.json in a Firefox profile.
 func ParseExtensions(filename string) (*Extensions, error) {
 	var extensions Extensions
 	if err := jsonutil.DecodeFile(filename, &extensions); err != nil {

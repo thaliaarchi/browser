@@ -11,7 +11,7 @@ type Times struct {
 	FirstUse timefmt.UnixMilli `json:"firstUse"`
 }
 
-// ParseTimes parses the times.json file in a Firefox profile.
+// ParseTimes parses times.json in a Firefox profile.
 func ParseTimes(filename string) (*Times, error) {
 	var times Times
 	if err := jsonutil.DecodeFile(filename, &times); err != nil {

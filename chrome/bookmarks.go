@@ -38,7 +38,7 @@ type BookmarkMetaInfo struct {
 	LastVisitedDesktop timefmt.QuotedChrome `json:"last_visited_desktop"`
 }
 
-// ParseBookmarks parses the Bookmarks file in a Chrome profile.
+// ParseBookmarks parses "Bookmarks" in a Chrome profile.
 func ParseBookmarks(filename string) (*Bookmarks, error) {
 	var bookmarks Bookmarks
 	if err := jsonutil.DecodeFile(filename, &bookmarks); err != nil {
