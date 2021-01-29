@@ -3,15 +3,14 @@ package firefox
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
 
+	"github.com/andrewarchi/browser/iniutil"
 	"gopkg.in/ini.v1"
 )
 
@@ -97,7 +96,7 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
 			}
 		case name == "General":
-			if err := decodeINIStrict(section, &info); err != nil {
+			if err := iniutil.DecodeINIStrict(section, &info); err != nil {
 				return nil, err
 			}
 		case strings.HasPrefix(name, "Profile"):
@@ -156,7 +155,7 @@ func parseProfile(section *ini.Section, id string) (*Profile, error) {
 	}
 	profile.ID = n
 
-	if err := decodeINIStrict(section, &profile); err != nil {
+	if err := iniutil.DecodeINIStrict(section, &profile); err != nil {
 		return nil, err
 	}
 	return &profile, nil
@@ -173,29 +172,8 @@ func parseInstall(section *ini.Section, id string) (*Install, error) {
 	}
 	install.ID = binary.BigEndian.Uint64(b)
 
-	if err := decodeINIStrict(section, &install); err != nil {
+	if err := iniutil.DecodeINIStrict(section, &install); err != nil {
 		return nil, err
 	}
 	return &install, nil
-}
-
-// decodeINIStrict decodes an INI section into a struct and checks for
-// unknown fields.
-func decodeINIStrict(section *ini.Section, v interface{}) error {
-	typ := reflect.TypeOf(v)
-	if typ.Kind() != reflect.Ptr {
-		return errors.New("not a pointer to a struct")
-	}
-	typ = typ.Elem()
-	if typ.Kind() != reflect.Struct {
-		return errors.New("not a pointer to a struct")
-	}
-
-	for _, key := range section.KeyStrings() {
-		f, ok := typ.FieldByName(key)
-		if !ok || f.Tag.Get("ini") == "-" {
-			return fmt.Errorf("ini: section %s has unknown key: %s", section.Name(), key)
-		}
-	}
-	return section.StrictMapTo(v)
 }
