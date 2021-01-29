@@ -2,6 +2,7 @@ package chrome
 
 import (
 	"github.com/andrewarchi/browser/jsonutil"
+	"github.com/andrewarchi/browser/jsonutil/timefmt"
 )
 
 // Bookmarks contains Chrome bookmark information.
@@ -19,25 +20,22 @@ type BookmarkRoots struct {
 	Synced      BookmarkEntry `json:"synced"`       // "Mobile Bookmarks" folder
 }
 
-// TODO: DateAdded, DateModified, and LastVisitedDesktop
-// are quoted timefmt.Chrome.
-
 // BookmarkEntry is either a folder containing further entries or a URL.
 type BookmarkEntry struct {
-	Children     []BookmarkEntry   `json:"children"`
-	DateAdded    string            `json:"date_added"`
-	DateModified string            `json:"date_modified,omitempty"` // for folder type only
-	GUID         string            `json:"guid"`                    // i.e. "01234567-89ab-cdef-0123-456789abcdef"
-	ID           string            `json:"id"`                      // i.e. "567"
-	Name         string            `json:"name"`
-	Type         string            `json:"type"` // "folder" or "url"
-	MetaInfo     *BookmarkMetaInfo `json:"meta_info,omitempty"`
-	URL          string            `json:"url,omitempty"` // for url type only
+	Children     []BookmarkEntry      `json:"children"`
+	DateAdded    timefmt.QuotedChrome `json:"date_added"`
+	DateModified timefmt.QuotedChrome `json:"date_modified,omitempty"` // for folder type only
+	GUID         string               `json:"guid"`                    // i.e. "01234567-89ab-cdef-0123-456789abcdef"
+	ID           string               `json:"id"`                      // i.e. "567"
+	Name         string               `json:"name"`
+	Type         string               `json:"type"` // "folder" or "url"
+	MetaInfo     *BookmarkMetaInfo    `json:"meta_info,omitempty"`
+	URL          string               `json:"url,omitempty"` // for url type only
 }
 
 // BookmarkMetaInfo contains additional bookmark metadata.
 type BookmarkMetaInfo struct {
-	LastVisitedDesktop string `json:"last_visited_desktop"`
+	LastVisitedDesktop timefmt.QuotedChrome `json:"last_visited_desktop"`
 }
 
 // ParseBookmarks parses the Bookmarks file in a Chrome profile.

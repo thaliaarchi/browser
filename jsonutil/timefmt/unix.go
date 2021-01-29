@@ -16,6 +16,15 @@ func FromUnix(sec int64) time.Time {
 	return time.Unix(sec, 0).UTC()
 }
 
+// ToUnix returns the Unix time in seconds since 1970-01-01 00:00:00 UTC
+// corresponding to the given time.
+func ToUnix(t time.Time) (sec int64) {
+	if t.IsZero() {
+		return 0
+	}
+	return t.Unix()
+}
+
 // FromUnixMilli returns the time corresponding to the given Unix time
 // in milliseconds since 1970-01-01 00:00:00 UTC.
 func FromUnixMilli(msec int64) time.Time {
@@ -23,6 +32,15 @@ func FromUnixMilli(msec int64) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(msec/1e3, (msec%1e3)*1e6).UTC()
+}
+
+// ToUnixMilli returns Unix time in milliseconds since
+// 1970-01-01 00:00:00 UTC corresponding to the given time.
+func ToUnixMilli(t time.Time) (msec int64) {
+	if t.IsZero() {
+		return 0
+	}
+	return t.UnixNano() / 1e6
 }
 
 // FromUnixMicro returns the time corresponding to the given Unix time
@@ -34,21 +52,27 @@ func FromUnixMicro(usec int64) time.Time {
 	return time.Unix(usec/1e6, (usec%1e6)*1e3).UTC()
 }
 
-// Unix is a time that is formatted in json as a Unix time
-// in seconds since 1970-01-01 00:00:00 UTC.
+// ToUnixMicro returns Unix time in microseconds since
+// 1970-01-01 00:00:00 UTC corresponding to the given time.
+func ToUnixMicro(t time.Time) (msec int64) {
+	if t.IsZero() {
+		return 0
+	}
+	return t.UnixNano() / 1e3
+}
+
+// Unix is a time that is formatted in json as an integer representing a
+// Unix time in seconds since 1970-01-01 00:00:00 UTC.
 type Unix struct{ time.Time }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t Unix) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("0"), nil
-	}
-	return []byte(strconv.FormatInt(t.Unix(), 10)), nil
+	return []byte(strconv.FormatInt(ToUnix(t.Time), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *Unix) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" || string(data) == "0" {
+	if string(data) == "null" {
 		return nil
 	}
 	sec, err := strconv.ParseInt(string(data), 10, 64)
@@ -59,21 +83,19 @@ func (t *Unix) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// UnixMilli is a time that is formatted in json as a Unix time
-// in milliseconds since 1970-01-01 00:00:00 UTC.
+// UnixMilli is a time that is formatted in json as an integer
+// representing a Unix time in milliseconds since
+// 1970-01-01 00:00:00 UTC.
 type UnixMilli struct{ time.Time }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t UnixMilli) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("0"), nil
-	}
-	return []byte(strconv.FormatInt(t.UnixNano()/1e6, 10)), nil
+	return []byte(strconv.FormatInt(ToUnixMilli(t.Time), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *UnixMilli) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" || string(data) == "0" {
+	if string(data) == "null" {
 		return nil
 	}
 	msec, err := strconv.ParseInt(string(data), 10, 64)
@@ -84,21 +106,19 @@ func (t *UnixMilli) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// UnixMicro is a time that is formatted in json as a Unix time
-// in microseconds since 1970-01-01 00:00:00 UTC.
+// UnixMicro is a time that is formatted in json as an integer
+// representing a Unix time in microseconds since
+// 1970-01-01 00:00:00 UTC.
 type UnixMicro struct{ time.Time }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t UnixMicro) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("0"), nil
-	}
-	return []byte(strconv.FormatInt(t.UnixNano()/1e3, 10)), nil
+	return []byte(strconv.FormatInt(ToUnixMicro(t.Time), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *UnixMicro) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" || string(data) == "0" {
+	if string(data) == "null" {
 		return nil
 	}
 	usec, err := strconv.ParseInt(string(data), 10, 64)

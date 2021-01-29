@@ -23,24 +23,30 @@ func FromChrome(usec int64) time.Time {
 	return time.Date(1601, 1, 1, 0, 0, int(sec), int(nsec), time.UTC)
 }
 
-// Chrome is a time that is formatted in json as an internal Chrome
-// timestamp in microseconds since 1601-01-01 00:00:00 UTC.
-type Chrome struct{ time.Time }
-
 var chromeEpoch = time.Date(1601, 1, 1, 0, 0, 0, 0, time.UTC)
+
+// ToChrome returns the internal Chrome time in microseconds since
+// 1601-01-01 00:00:00 UTC corresponding to the given time.
+func ToChrome(t time.Time) (usec int64) {
+	if t.IsZero() {
+		return 0
+	}
+	return int64(t.Sub(chromeEpoch) / time.Microsecond)
+}
+
+// Chrome is a time that is formatted in json as an integer representing
+// an internal Chrome time in microseconds since
+// 1601-01-01 00:00:00 UTC.
+type Chrome struct{ time.Time }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t Chrome) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("0"), nil
-	}
-	usec := t.Sub(chromeEpoch) / time.Microsecond
-	return []byte(strconv.FormatInt(int64(usec), 10)), nil
+	return []byte(strconv.FormatInt(ToChrome(t.Time), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *Chrome) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" || string(data) == "0" {
+	if string(data) == "null" {
 		return nil
 	}
 	usec, err := strconv.ParseInt(string(data), 10, 64)
@@ -48,5 +54,36 @@ func (t *Chrome) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	*t = Chrome{FromChrome(usec)}
+	return nil
+}
+
+// QuotedChrome is a time that is formatted in json as a quoted integer
+// representing an internal Chrome time in microseconds since
+// 1601-01-01 00:00:00 UTC.
+type QuotedChrome struct{ time.Time }
+
+// MarshalJSON implements the json.Marshaler interface.
+func (t QuotedChrome) MarshalJSON() ([]byte, error) {
+	var buf []byte
+	buf = append(buf, '"')
+	strconv.AppendInt(buf, ToChrome(t.Time), 10)
+	buf = append(buf, '"')
+	return buf, nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (t *QuotedChrome) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+	q, err := strconv.Unquote(string(data))
+	if err != nil {
+		return err
+	}
+	usec, err := strconv.ParseInt(q, 10, 64)
+	if err != nil {
+		return err
+	}
+	*t = QuotedChrome{FromChrome(usec)}
 	return nil
 }

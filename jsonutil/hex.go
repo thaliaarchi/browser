@@ -2,7 +2,7 @@ package jsonutil
 
 import (
 	"encoding/hex"
-	"fmt"
+	"strconv"
 )
 
 // Hex is a byte slice that is formatted in json as a hexadecimal
@@ -27,16 +27,15 @@ func (h *Hex) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
-		return fmt.Errorf("hex data is not a quoted string: %q", string(data))
-	}
-	data = data[1 : len(data)-1]
-	buf := make([]byte, hex.DecodedLen(len(data)))
-	n, err := hex.Decode(buf, data)
+	q, err := strconv.Unquote(string(data))
 	if err != nil {
 		return err
 	}
-	*h = buf[:n]
+	buf, err := hex.DecodeString(q)
+	if err != nil {
+		return err
+	}
+	*h = buf
 	return nil
 }
 
