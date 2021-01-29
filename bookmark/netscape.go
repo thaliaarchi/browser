@@ -14,6 +14,7 @@ import (
 
 // Format reference:
 // http://fileformats.archiveteam.org/wiki/Netscape_bookmarks
+// http://fileformats.archiveteam.org/wiki/Chrome_bookmarks
 // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa753582(v=vs.85)
 //
 // Other services appear to use fields not used by
@@ -108,7 +109,7 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 			e = &Bookmark{
 				Title:   a.Text(),
 				URL:     a.AttrOr("href", ""),
-				AddDate: timefmt.FromChromeMicro(addDate),
+				AddDate: timefmt.FromChrome(addDate),
 				IconURI: a.AttrOr("icon_uri", ""),
 			}
 		}
