@@ -36,7 +36,7 @@ type SchemeHandler struct {
 // ParseHandlers parses the handlers.json file in a Firefox profile.
 func ParseHandlers(filename string) (*Handlers, error) {
 	var handlers Handlers
-	if err := jsonutil.Decode(filename, &handlers); err != nil {
+	if err := jsonutil.DecodeFile(filename, &handlers); err != nil {
 		return nil, err
 	}
 	return &handlers, nil

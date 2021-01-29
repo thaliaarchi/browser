@@ -42,7 +42,7 @@ type ExtensionSetting struct {
 // Firefox profile.
 func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 	var settings ExtensionSettings
-	if err := jsonutil.Decode(filename, &settings); err != nil {
+	if err := jsonutil.DecodeFile(filename, &settings); err != nil {
 		return nil, err
 	}
 	return &settings, nil
@@ -59,7 +59,7 @@ type ExtensionPermissions struct {
 // in a Firefox profile.
 func ParseExtensionPreferences(filename string) (map[string]ExtensionPermissions, error) {
 	var prefs map[string]ExtensionPermissions
-	if err := jsonutil.Decode(filename, &prefs); err != nil {
+	if err := jsonutil.DecodeFile(filename, &prefs); err != nil {
 		return nil, err
 	}
 	return prefs, nil
@@ -214,7 +214,7 @@ const (
 // ParseExtensions parses the extensions.json file in a Firefox profile.
 func ParseExtensions(filename string) (*Extensions, error) {
 	var extensions Extensions
-	if err := jsonutil.Decode(filename, &extensions); err != nil {
+	if err := jsonutil.DecodeFile(filename, &extensions); err != nil {
 		return nil, err
 	}
 	return &extensions, nil

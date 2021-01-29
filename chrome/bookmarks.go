@@ -41,7 +41,7 @@ type BookmarkMetaInfo struct {
 // ParseBookmarks parses the Bookmarks file in a Chrome profile.
 func ParseBookmarks(filename string) (*Bookmarks, error) {
 	var bookmarks Bookmarks
-	if err := jsonutil.Decode(filename, &bookmarks); err != nil {
+	if err := jsonutil.DecodeFile(filename, &bookmarks); err != nil {
 		return nil, err
 	}
 	return &bookmarks, nil

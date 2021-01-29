@@ -1,7 +1,6 @@
 package takeout
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/andrewarchi/browser/archive"
 	"github.com/andrewarchi/browser/bookmark"
+	"github.com/andrewarchi/browser/jsonutil"
 )
 
 type Export struct {
@@ -80,11 +80,7 @@ func ParseChrome(filename string) (*Chrome, error) {
 		switch base := filepath.Base(name); base {
 		case "Autofill.json", "BrowserHistory.json", "Extensions.json",
 			"SearchEngines.json", "SyncSettings.json":
-			d := json.NewDecoder(r)
-			d.DisallowUnknownFields()
-			if err := d.Decode(data); err != nil {
-				return err
-			}
+			return jsonutil.Decode(r, data)
 		case "Bookmarks.html":
 			b, err := bookmark.ParseNetscape(r)
 			if err != nil {

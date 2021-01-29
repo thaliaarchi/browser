@@ -3,10 +3,10 @@ package firefox
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 
+	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/pierrec/lz4/v4"
 )
 
@@ -38,7 +38,5 @@ func UnmarshalMozLz4Json(b []byte, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	d := json.NewDecoder(bytes.NewReader(data))
-	d.DisallowUnknownFields()
-	return d.Decode(v)
+	return jsonutil.Decode(bytes.NewReader(data), v)
 }

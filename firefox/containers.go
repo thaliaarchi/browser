@@ -24,7 +24,7 @@ type ContainerIdentity struct {
 // ParseContainers parses the containers.json file in a Firefox profile.
 func ParseContainers(filename string) (*Containers, error) {
 	var containers Containers
-	if err := jsonutil.Decode(filename, &containers); err != nil {
+	if err := jsonutil.DecodeFile(filename, &containers); err != nil {
 		return nil, err
 	}
 	return &containers, nil
