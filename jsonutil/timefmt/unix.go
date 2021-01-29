@@ -48,7 +48,7 @@ func (t Unix) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *Unix) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == "null" || string(data) == "0" {
 		return nil
 	}
 	sec, err := strconv.ParseInt(string(data), 10, 64)
@@ -73,7 +73,7 @@ func (t UnixMilli) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *UnixMilli) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == "null" || string(data) == "0" {
 		return nil
 	}
 	msec, err := strconv.ParseInt(string(data), 10, 64)
@@ -98,7 +98,7 @@ func (t UnixMicro) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *UnixMicro) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == "null" || string(data) == "0" {
 		return nil
 	}
 	usec, err := strconv.ParseInt(string(data), 10, 64)

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/andrewarchi/browser/bookmark"
+	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
 )
 
@@ -61,7 +62,7 @@ type BrowserHistory struct {
 	PageTransition PageTransition    `json:"page_transition"`
 	Title          string            `json:"title"`
 	URL            string            `json:"url"`
-	ClientID       string            `json:"client_id"` // base64-encoded
+	ClientID       jsonutil.Base64   `json:"client_id"`
 	Time           timefmt.UnixMicro `json:"time_usec"`
 }
 
