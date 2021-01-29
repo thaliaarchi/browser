@@ -2,7 +2,7 @@ package jsonutil
 
 import (
 	"encoding/base64"
-	"errors"
+	"fmt"
 )
 
 // Base64 is a byte slice that is formatted in json as a base64 string.
@@ -14,11 +14,11 @@ func (b Base64) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	n := base64.StdEncoding.EncodedLen(len(b))
-	b64 := make([]byte, n+2)
-	base64.StdEncoding.Encode(b64[1:n+1], b)
-	b64[0] = '"'
-	b64[n+1] = '"'
-	return b64, nil
+	buf := make([]byte, n+2)
+	base64.StdEncoding.Encode(buf[1:n+1], b)
+	buf[0] = '"'
+	buf[n+1] = '"'
+	return buf, nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
@@ -27,7 +27,7 @@ func (b *Base64) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
-		return errors.New("base64 data is not a quoted string")
+		return fmt.Errorf("base64 data is not a quoted string: %q", string(data))
 	}
 	data = data[1 : len(data)-1]
 	buf := make([]byte, base64.StdEncoding.DecodedLen(len(data)))

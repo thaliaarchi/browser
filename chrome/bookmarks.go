@@ -6,7 +6,7 @@ import (
 
 // Bookmarks contains Chrome bookmark information.
 type Bookmarks struct {
-	Checksum     string          `json:"checksum"` // hex
+	Checksum     jsonutil.Hex    `json:"checksum"`
 	Roots        BookmarkRoots   `json:"roots"`
 	SyncMetadata jsonutil.Base64 `json:"sync_metadata,omitempty"`
 	Version      int             `json:"version"` // i.e. 1
@@ -40,6 +40,7 @@ type BookmarkMetaInfo struct {
 	LastVisitedDesktop string `json:"last_visited_desktop"`
 }
 
+// ParseBookmarks parses the Bookmarks file in a Chrome profile.
 func ParseBookmarks(filename string) (*Bookmarks, error) {
 	var bookmarks Bookmarks
 	if err := jsonutil.Decode(filename, &bookmarks); err != nil {
