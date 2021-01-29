@@ -3,9 +3,11 @@ package firefox
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -45,14 +47,14 @@ func ProfilesDir() (string, error) {
 // ProfileInfo contains Firefox profiles and installs.
 type ProfileInfo struct {
 	StartWithLastProfile bool
-	Version              int // i.e. 2
-	Profiles             []Profile
-	Installs             []Install
+	Version              int       // i.e. 2
+	Profiles             []Profile `ini:"-"`
+	Installs             []Install `ini:"-"`
 }
 
 // Profile is a Firefox profile.
 type Profile struct {
-	ID         int    // sequential (i.e. 0, 1, 2)
+	ID         int    `ini:"-"` // sequential (i.e. 0, 1, 2)
 	Name       string // i.e. "default", "default-release", "dev-edition-default"
 	IsRelative bool
 	Path       string
@@ -61,7 +63,7 @@ type Profile struct {
 
 // Install is a Firefox installation.
 type Install struct {
-	ID      uint64 // displayed in uppercase hex
+	ID      uint64 `ini:"-"` // displayed in uppercase hex
 	Default string // default profile path
 	Locked  bool
 }
@@ -80,30 +82,48 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 	for i := len(sections) - 1; i >= 0; i-- {
 		section := sections[i]
 		name := section.Name()
-		keys := section.Keys()
-
 		switch {
 		case name == "DEFAULT":
-			if len(keys) != 0 {
+			if len(section.KeyStrings()) != 0 {
 				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
 			}
 			continue
+
 		case name == "General":
-			if err := parseGeneralSection(keys, &info); err != nil {
+			if err := decodeINIStrict(section, &info); err != nil {
 				return nil, err
 			}
+
 		case strings.HasPrefix(name, "Profile"):
-			profile, err := parseProfileSection(name, keys)
+			var profile Profile
+			id, err := strconv.Atoi(strings.TrimPrefix(name, "Profile"))
 			if err != nil {
+				return nil, fmt.Errorf("firefox: profile ID: %w", err)
+			}
+			profile.ID = id
+
+			if err := decodeINIStrict(section, &profile); err != nil {
 				return nil, err
 			}
-			info.Profiles = append(info.Profiles, *profile)
+			info.Profiles = append(info.Profiles, profile)
+
 		case strings.HasPrefix(name, "Install"):
-			install, err := parseInstallSection(name, keys)
+			var install Install
+			id := strings.TrimPrefix(name, "Install")
+			if len(id) != 16 {
+				return nil, fmt.Errorf("firefox: install ID not 8 bytes: %s", name)
+			}
+			b, err := hex.DecodeString(id)
 			if err != nil {
 				return nil, err
 			}
-			info.Installs = append(info.Installs, *install)
+			install.ID = binary.BigEndian.Uint64(b)
+
+			if err := decodeINIStrict(section, &install); err != nil {
+				return nil, err
+			}
+			info.Installs = append(info.Installs, install)
+
 		default:
 			return nil, fmt.Errorf("firefox: unknown section: %s", name)
 		}
@@ -111,84 +131,23 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 	return &info, nil
 }
 
-func parseGeneralSection(keys []*ini.Key, info *ProfileInfo) error {
-	for _, key := range keys {
-		switch keyName := key.Name(); keyName {
-		case "StartWithLastProfile":
-			s, err := key.Bool()
-			if err != nil {
-				return err
-			}
-			info.StartWithLastProfile = s
-		case "Version":
-			v, err := key.Int()
-			if err != nil {
-				return err
-			}
-			info.Version = v
-		default:
-			return fmt.Errorf("firefox: unknown key in General: %s", keyName)
+// decodeINIStrict decodes an INI section into a struct and checks for
+// unknown fields.
+func decodeINIStrict(section *ini.Section, v interface{}) error {
+	typ := reflect.TypeOf(v)
+	if typ.Kind() != reflect.Ptr {
+		return errors.New("not a pointer to a struct")
+	}
+	typ = typ.Elem()
+	if typ.Kind() != reflect.Struct {
+		return errors.New("not a pointer to a struct")
+	}
+
+	for _, key := range section.KeyStrings() {
+		f, ok := typ.FieldByName(key)
+		if !ok || f.Tag.Get("ini") == "-" {
+			return fmt.Errorf("ini: section %s has unknown key: %s", section.Name(), key)
 		}
 	}
-	return nil
-}
-
-func parseProfileSection(name string, keys []*ini.Key) (*Profile, error) {
-	var profile Profile
-	id, err := strconv.Atoi(strings.TrimPrefix(name, "Profile"))
-	if err != nil {
-		return nil, fmt.Errorf("firefox: profile ID: %w", err)
-	}
-	profile.ID = id
-
-	for _, key := range keys {
-		switch keyName := key.Name(); keyName {
-		case "Name":
-			profile.Name = key.String()
-		case "IsRelative":
-			r, err := key.Bool()
-			if err != nil {
-				return nil, err
-			}
-			profile.IsRelative = r
-		case "Path":
-			profile.Path = key.String()
-		case "Default":
-			d, err := key.Bool()
-			if err != nil {
-				return nil, err
-			}
-			profile.Default = d
-		default:
-			return nil, fmt.Errorf("firefox: unknown key in %s: %s", name, keyName)
-		}
-	}
-	return &profile, nil
-}
-
-func parseInstallSection(name string, keys []*ini.Key) (*Install, error) {
-	var install Install
-	id := strings.TrimPrefix(name, "Install")
-	if len(id) != 16 {
-		return nil, fmt.Errorf("firefox: install ID not 8 bytes: %s", name)
-	}
-	b, err := hex.DecodeString(id)
-	if err != nil {
-		return nil, err
-	}
-	install.ID = binary.BigEndian.Uint64(b)
-
-	for _, key := range keys {
-		switch keyName := key.Name(); keyName {
-		case "Default":
-			install.Default = key.String()
-		case "Locked":
-			l, err := key.Bool()
-			if err != nil {
-				return nil, err
-			}
-			install.Locked = l
-		}
-	}
-	return &install, nil
+	return section.StrictMapTo(v)
 }
