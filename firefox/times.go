@@ -1,6 +1,6 @@
 package firefox
 
-import "github.com/andrewarchi/archive/timefmt"
+import "github.com/andrewarchi/browser/timefmt"
 
 // Times contains installation times in times.json.
 type Times struct {

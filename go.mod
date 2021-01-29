@@ -1,4 +1,4 @@
-module github.com/andrewarchi/archive
+module github.com/andrewarchi/browser
 
 go 1.15
 

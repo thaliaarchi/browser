@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/andrewarchi/archive/archive"
-	"github.com/andrewarchi/archive/bookmark"
+	"github.com/andrewarchi/browser/archive"
+	"github.com/andrewarchi/browser/bookmark"
 )
 
 type Export struct {

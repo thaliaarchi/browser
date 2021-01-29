@@ -1,6 +1,6 @@
 package firefox
 
-import "github.com/andrewarchi/archive/timefmt"
+import "github.com/andrewarchi/browser/timefmt"
 
 // ExtensionSettings contains preferences and commands set by extensions
 // in extension-settings.json.

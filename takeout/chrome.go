@@ -3,8 +3,8 @@ package takeout
 import (
 	"time"
 
-	"github.com/andrewarchi/archive/bookmark"
-	"github.com/andrewarchi/archive/timefmt"
+	"github.com/andrewarchi/browser/bookmark"
+	"github.com/andrewarchi/browser/timefmt"
 )
 
 type Chrome struct {

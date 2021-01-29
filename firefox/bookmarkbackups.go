@@ -3,7 +3,7 @@ package firefox
 import (
 	"io/ioutil"
 
-	"github.com/andrewarchi/archive/timefmt"
+	"github.com/andrewarchi/browser/timefmt"
 )
 
 type BookmarkBackup struct {
