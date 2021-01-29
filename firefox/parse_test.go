@@ -7,11 +7,11 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	home, err := os.UserHomeDir()
+	profilesDir, err := ProfilesDir()
 	if err != nil {
 		t.Fatal(err)
 	}
-	profiles, err := filepath.Glob(home + "/Library/Application Support/Firefox/Profiles/*") // macOS
+	profiles, err := filepath.Glob(filepath.Join(profilesDir, "*"))
 	if err != nil {
 		t.Fatal(err)
 	}
