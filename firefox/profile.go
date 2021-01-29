@@ -87,48 +87,87 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 			if len(section.KeyStrings()) != 0 {
 				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
 			}
-			continue
-
 		case name == "General":
 			if err := decodeINIStrict(section, &info); err != nil {
 				return nil, err
 			}
-
 		case strings.HasPrefix(name, "Profile"):
-			var profile Profile
-			id, err := strconv.Atoi(strings.TrimPrefix(name, "Profile"))
+			profile, err := parseProfile(section, strings.TrimPrefix(name, "Profile"))
 			if err != nil {
-				return nil, fmt.Errorf("firefox: profile ID: %w", err)
-			}
-			profile.ID = id
-
-			if err := decodeINIStrict(section, &profile); err != nil {
 				return nil, err
 			}
-			info.Profiles = append(info.Profiles, profile)
-
+			info.Profiles = append(info.Profiles, *profile)
 		case strings.HasPrefix(name, "Install"):
-			var install Install
-			id := strings.TrimPrefix(name, "Install")
-			if len(id) != 16 {
-				return nil, fmt.Errorf("firefox: install ID not 8 bytes: %s", name)
-			}
-			b, err := hex.DecodeString(id)
+			install, err := parseInstall(section, strings.TrimPrefix(name, "Install"))
 			if err != nil {
 				return nil, err
 			}
-			install.ID = binary.BigEndian.Uint64(b)
-
-			if err := decodeINIStrict(section, &install); err != nil {
-				return nil, err
-			}
-			info.Installs = append(info.Installs, install)
-
+			info.Installs = append(info.Installs, *install)
 		default:
 			return nil, fmt.Errorf("firefox: unknown section: %s", name)
 		}
 	}
 	return &info, nil
+}
+
+// ParseInstalls parses the installs.ini in the Firefox root.
+func ParseInstalls(firefoxDir string) ([]Install, error) {
+	filename := filepath.Join(firefoxDir, "installs.ini")
+	f, err := ini.Load(filename)
+	if err != nil {
+		return nil, err
+	}
+	var installs []Install
+
+	// Sections are listed in reverse order
+	sections := f.Sections()
+	for i := len(sections) - 1; i >= 0; i-- {
+		section := sections[i]
+		name := section.Name()
+		if name == "DEFAULT" {
+			if len(section.KeyStrings()) != 0 {
+				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
+			}
+		} else {
+			install, err := parseInstall(section, name)
+			if err != nil {
+				return nil, err
+			}
+			installs = append(installs, *install)
+		}
+	}
+	return installs, nil
+}
+
+func parseProfile(section *ini.Section, id string) (*Profile, error) {
+	var profile Profile
+	n, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("firefox: profile ID: %w", err)
+	}
+	profile.ID = n
+
+	if err := decodeINIStrict(section, &profile); err != nil {
+		return nil, err
+	}
+	return &profile, nil
+}
+
+func parseInstall(section *ini.Section, id string) (*Install, error) {
+	var install Install
+	if len(id) != 16 {
+		return nil, fmt.Errorf("firefox: install ID not 8 bytes: %s", section.Name())
+	}
+	b, err := hex.DecodeString(id)
+	if err != nil {
+		return nil, err
+	}
+	install.ID = binary.BigEndian.Uint64(b)
+
+	if err := decodeINIStrict(section, &install); err != nil {
+		return nil, err
+	}
+	return &install, nil
 }
 
 // decodeINIStrict decodes an INI section into a struct and checks for
