@@ -8,6 +8,8 @@ package takeout
 
 import (
 	"errors"
+	"io"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -157,8 +159,8 @@ func ParseChrome(filename string) (*Chrome, error) {
 	}
 	data := &Chrome{ExportTime: ex.Time}
 	err = ex.Walk(func(f archive.File) error {
-		name := f.Name()
-		if filepath.Dir(name) != "Takeout/Chrome" {
+		dir, base := filepath.Split(f.Name())
+		if dir != "Takeout/Chrome/" {
 			return nil
 		}
 		r, err := f.Open()
@@ -166,7 +168,7 @@ func ParseChrome(filename string) (*Chrome, error) {
 			return err
 		}
 		defer r.Close()
-		switch base := filepath.Base(name); base {
+		switch base {
 		case "Autofill.json", "BrowserHistory.json", "Extensions.json",
 			"SearchEngines.json", "SyncSettings.json":
 			return jsonutil.Decode(r, data)
@@ -189,4 +191,35 @@ func ParseChrome(filename string) (*Chrome, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+// ExtractChrome extracts Chrome data in a Takeout export to a
+// directory.
+func ExtractChrome(filename, dir string) error {
+	ex, err := NewExport(filename)
+	if err != nil {
+		return err
+	}
+	out := filepath.Join(dir, "takeout-"+ex.Timestamp)
+	if err := os.Mkdir(out, 0755); err != nil {
+		return err
+	}
+	return ex.Walk(func(f archive.File) error {
+		dir, base := filepath.Split(f.Name())
+		if dir != "Takeout/Chrome/" {
+			return nil
+		}
+		rf, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer rf.Close()
+		wf, err := os.Create(filepath.Join(out, base))
+		if err != nil {
+			return err
+		}
+		defer wf.Close()
+		_, err = io.Copy(wf, rf)
+		return err
+	})
 }

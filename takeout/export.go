@@ -31,7 +31,7 @@ var exportPattern = regexp.MustCompile(`^takeout-(\d{8}T\d{6}Z)-(\d{3})\.(tgz|zi
 // NewExport opens a Takeout export, given the path to the first archive
 // in a multi-part export.
 func NewExport(filename string) (*Export, error) {
-	base := filepath.Base(filename)
+	dir, base := filepath.Split(filename)
 	match := exportPattern.FindStringSubmatch(base)
 	if len(match) != 4 {
 		return nil, fmt.Errorf("takeout: path is not an export: %q", base)
@@ -44,7 +44,8 @@ func NewExport(filename string) (*Export, error) {
 	if err != nil {
 		return nil, fmt.Errorf("takeout: export timestamp: %w", err)
 	}
-	parts, err := filepath.Glob("takeout-" + timestamp + "-???." + ext)
+	glob := filepath.Join(dir, "takeout-"+timestamp+"-???."+ext)
+	parts, err := filepath.Glob(glob)
 	if err != nil {
 		return nil, err
 	}
