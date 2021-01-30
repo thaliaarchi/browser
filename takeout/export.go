@@ -22,7 +22,6 @@ import (
 type Export struct {
 	Time      time.Time // time of export from filename
 	Timestamp string    // raw timestamp
-	Ext       string    // zip or tgz
 	Parts     []string  // paths to multi-part archives
 }
 
@@ -49,23 +48,14 @@ func NewExport(filename string) (*Export, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Export{t, timestamp, ext, parts}, nil
+	return &Export{t, timestamp, parts}, nil
 }
 
 // Walk traverses a Takeout export and executes the given walk function
 // on each file.
 func (ex *Export) Walk(walk archive.WalkFunc) error {
-	var walker func(string, archive.WalkFunc) error
-	switch ex.Ext {
-	case "zip":
-		walker = archive.WalkZip
-	case "tgz":
-		walker = archive.WalkTgz
-	default:
-		return fmt.Errorf("takeout: illegal extension: %q", ex.Ext)
-	}
 	for _, part := range ex.Parts {
-		if err := walker(part, walk); err != nil {
+		if err := archive.Walk(part, walk); err != nil {
 			return err
 		}
 	}
