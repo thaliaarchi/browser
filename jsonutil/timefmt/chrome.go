@@ -9,6 +9,8 @@ package timefmt
 import (
 	"strconv"
 	"time"
+
+	"github.com/andrewarchi/browser/jsonutil"
 )
 
 // Chrome represents times internally as microseconds (s/1,000,000)
@@ -82,11 +84,11 @@ func (t *QuotedChrome) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	q, err := strconv.Unquote(string(data))
+	q, err := jsonutil.UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
-	usec, err := strconv.ParseInt(q, 10, 64)
+	usec, err := strconv.ParseInt(string(q), 10, 64)
 	if err != nil {
 		return err
 	}

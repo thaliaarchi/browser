@@ -6,10 +6,7 @@
 
 package jsonutil
 
-import (
-	"encoding/base64"
-	"strconv"
-)
+import "encoding/base64"
 
 // Base64 is a byte slice that is formatted in json as a base64 string.
 type Base64 []byte
@@ -32,15 +29,16 @@ func (b *Base64) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	q, err := strconv.Unquote(string(data))
+	q, err := UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
-	buf, err := base64.StdEncoding.DecodeString(q)
+	buf := make([]byte, base64.StdEncoding.DecodedLen(len(q)))
+	n, err := base64.StdEncoding.Decode(buf, q)
 	if err != nil {
 		return err
 	}
-	*b = buf
+	*b = buf[:n]
 	return nil
 }
 

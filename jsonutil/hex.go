@@ -6,10 +6,7 @@
 
 package jsonutil
 
-import (
-	"encoding/hex"
-	"strconv"
-)
+import "encoding/hex"
 
 // Hex is a byte slice that is formatted in json as a hexadecimal
 // string.
@@ -33,12 +30,12 @@ func (h *Hex) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	q, err := strconv.Unquote(string(data))
+	q, err := UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
-	buf, err := hex.DecodeString(q)
-	if err != nil {
+	buf := make([]byte, hex.DecodedLen(len(q)))
+	if _, err = hex.Decode(buf, q); err != nil {
 		return err
 	}
 	*h = buf
