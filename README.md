@@ -48,3 +48,8 @@ No Brave-specific data is currently parsed.
 #### Edge (Chromium)
 
 No Edge-specific data is currently parsed.
+
+## License
+
+This project is made available under the
+[Mozilla Public License](https://www.mozilla.org/en-US/MPL/2.0/).
