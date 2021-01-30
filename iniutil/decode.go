@@ -30,7 +30,7 @@ func DecodeINIStrict(section *ini.Section, v interface{}) error {
 	for _, key := range section.KeyStrings() {
 		f, ok := typ.FieldByName(key)
 		if !ok || f.Tag.Get("ini") == "-" {
-			return fmt.Errorf("ini: section %s has unknown key: %s", section.Name(), key)
+			return fmt.Errorf("ini: section %q has unknown key %q", section.Name(), key)
 		}
 	}
 	return section.StrictMapTo(v)

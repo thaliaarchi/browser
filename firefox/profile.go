@@ -10,6 +10,7 @@ package firefox
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -100,7 +101,7 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 		switch {
 		case name == "DEFAULT":
 			if len(section.KeyStrings()) != 0 {
-				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
+				return nil, errors.New("firefox: root section has bare keys")
 			}
 		case name == "General":
 			if err := iniutil.DecodeINIStrict(section, &info); err != nil {
@@ -119,7 +120,7 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 			}
 			info.Installs = append(info.Installs, *install)
 		default:
-			return nil, fmt.Errorf("firefox: unknown section: %s", name)
+			return nil, fmt.Errorf("firefox: unknown section: %q", name)
 		}
 	}
 	return &info, nil
@@ -141,7 +142,7 @@ func ParseInstalls(firefoxDir string) ([]Install, error) {
 		name := section.Name()
 		if name == "DEFAULT" {
 			if len(section.KeyStrings()) != 0 {
-				return nil, fmt.Errorf("firefox: root section has bare keys: %s", filename)
+				return nil, errors.New("firefox: root section has bare keys")
 			}
 		} else {
 			install, err := parseInstall(section, name)
@@ -158,7 +159,7 @@ func parseProfile(section *ini.Section, id string) (*Profile, error) {
 	var profile Profile
 	n, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, fmt.Errorf("firefox: profile ID: %w", err)
+		return nil, fmt.Errorf("firefox: invalid profile ID: %w", err)
 	}
 	profile.ID = n
 
@@ -171,7 +172,7 @@ func parseProfile(section *ini.Section, id string) (*Profile, error) {
 func parseInstall(section *ini.Section, id string) (*Install, error) {
 	var install Install
 	if len(id) != 16 {
-		return nil, fmt.Errorf("firefox: install ID not 8 bytes: %s", section.Name())
+		return nil, fmt.Errorf("firefox: install ID not 8 bytes: %q", section.Name())
 	}
 	b, err := hex.DecodeString(id)
 	if err != nil {

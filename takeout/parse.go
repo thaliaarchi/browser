@@ -35,11 +35,11 @@ func Open(filename string) (*Export, error) {
 	base := filepath.Base(filename)
 	match := exportPattern.FindStringSubmatch(base)
 	if len(match) != 4 {
-		return nil, fmt.Errorf("takeout: path is not an export: %s", base)
+		return nil, fmt.Errorf("takeout: path is not an export: %q", base)
 	}
 	timestamp, seq, ext := match[1], match[2], match[3]
 	if seq != "001" {
-		return nil, fmt.Errorf("takeout: archive not first in sequence: %s", seq)
+		return nil, fmt.Errorf("takeout: archive not first in sequence: %q", seq)
 	}
 	t, err := time.Parse("20060102T150405Z", timestamp)
 	if err != nil {
@@ -62,7 +62,7 @@ func (ex *Export) Walk(walk archive.WalkFunc) error {
 	case "tgz":
 		walker = archive.WalkTgz
 	default:
-		return fmt.Errorf("takeout: illegal extension: %s", ex.Ext)
+		return fmt.Errorf("takeout: illegal extension: %q", ex.Ext)
 	}
 	for _, part := range ex.Parts {
 		if err := walker(part, walk); err != nil {

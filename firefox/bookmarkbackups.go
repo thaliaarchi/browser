@@ -85,7 +85,7 @@ func GetBookmarkBackupMetadata(filename string) (*BookmarkBackup, error) {
 	base := filepath.Base(filename)
 	matches := bookmarkBackupPattern.FindStringSubmatch(base)
 	if len(matches) != 5 {
-		return nil, fmt.Errorf("firefox: filename is not a bookmark backup: %s", base)
+		return nil, fmt.Errorf("firefox: filename is not a bookmark backup: %q", base)
 	}
 	var meta BookmarkBackup
 	var err error
@@ -106,7 +106,7 @@ func GetBookmarkBackupMetadata(filename string) (*BookmarkBackup, error) {
 			return nil, err
 		}
 		if len(meta.Hash) != 16 {
-			return nil, fmt.Errorf("firefox: bookmark backup has is not 16 bytes: %s", matches[3])
+			return nil, fmt.Errorf("firefox: bookmark backup hash is not 16 bytes: %q", matches[3])
 		}
 	}
 	meta.Compressed = matches[4] == "jsonlz4"

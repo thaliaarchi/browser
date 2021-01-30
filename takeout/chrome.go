@@ -17,7 +17,7 @@ import (
 type Chrome struct {
 	ExportTime time.Time `json:"-"`
 	// Autofill.json
-	Autofill        []AutofillProfile `json:"Autofill"` // Appears in older exports
+	Autofill        []AutofillProfile `json:"Autofill"` // appears in older exports
 	AutofillProfile []AutofillProfile `json:"Autofill Profile"`
 	// Bookmarks.html
 	Bookmarks []bookmark.BookmarkEntry
@@ -30,11 +30,11 @@ type Chrome struct {
 	// SearchEngines.json
 	SearchEngines []SearchEngine `json:"Search Engines"`
 	// SyncSettings.json
-	Apps         []App         `json:"Apps"`
-	AppSettings  []AppSetting  `json:"App Settings"`
-	Preferences  []Preference  `json:"Preferences"`
-	Themes       []Theme       `json:"Themes"`
-	ManagedUsers []interface{} `json:"Managed Users"` // TODO unknown structure
+	Apps         []App                  `json:"Apps"`
+	AppSettings  []AppSetting           `json:"App Settings"`
+	Preferences  []Preference           `json:"Preferences"`
+	Themes       []Theme                `json:"Themes"`
+	ManagedUsers []jsonutil.UnknownType `json:"Managed Users"`
 }
 
 type AutofillProfile struct {

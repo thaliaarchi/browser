@@ -70,7 +70,7 @@ func checkDoctype(doc *goquery.Document, doctype string) error {
 	for n := doc.Nodes[0].FirstChild; n != nil; n = n.NextSibling {
 		if n.Type == html.DoctypeNode {
 			if n.Data != doctype {
-				return fmt.Errorf("bookmark: illegal doctype: %s", n.Data)
+				return fmt.Errorf("bookmark: illegal doctype: %q", n.Data)
 			}
 			return nil
 		}

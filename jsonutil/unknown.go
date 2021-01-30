@@ -21,7 +21,7 @@ func (u *UnknownObj) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" || string(data) == "{}" {
 		return nil
 	}
-	return fmt.Errorf("jsonutil: unmarshal of unknown object type: %s", data)
+	return fmt.Errorf("jsonutil: unmarshal of unknown object type: %q", data)
 }
 
 // UnknownType represents a json value for which the full type
@@ -37,5 +37,5 @@ func (u *UnknownType) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	return fmt.Errorf("jsonutil: unmarshal of unknown type: %s", data)
+	return fmt.Errorf("jsonutil: unmarshal of unknown type: %q", data)
 }
