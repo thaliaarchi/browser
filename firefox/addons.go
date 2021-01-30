@@ -20,25 +20,25 @@ type Addons struct {
 
 // AddonInfo contains addon information from addons.mozilla.org.
 type AddonInfo struct {
-	ID              string            `json:"id"`    // ID "addon@example.com" or GUID "{01234567-89ab-cdef-0123-456789abcdef}"
-	Icons           map[int]string    `json:"icons"` // key: icon size, value: path
-	Type            string            `json:"type"`  // i.e. "extension", "locale", "dictionary"
-	Name            string            `json:"name"`
-	Version         string            `json:"version"`
-	Creator         Person            `json:"creator"`
-	Developers      []Person          `json:"developers"`
-	Description     string            `json:"description"`
-	FullDescription string            `json:"fullDescription"`
-	Screenshots     []Screenshot      `json:"screenshots"`
-	HomepageURL     string            `json:"homepageURL"`
-	SupportURL      string            `json:"supportURL"`
-	ContributionURL string            `json:"contributionURL"`
-	AverageRating   float64           `json:"averageRating"` // out of 5
-	ReviewCount     int               `json:"reviewCount"`
-	ReviewURL       string            `json:"reviewURL"`
-	WeeklyDownloads int               `json:"weeklyDownloads"`
-	SourceURI       string            `json:"sourceURI"` // URI to .xpi
-	UpdateDate      timefmt.UnixMilli `json:"updateDate"`
+	ID              jsonutil.FirefoxID `json:"id"`
+	Icons           map[int]string     `json:"icons"` // key: icon size, value: path
+	Type            string             `json:"type"`  // i.e. "extension", "locale", "dictionary"
+	Name            string             `json:"name"`
+	Version         string             `json:"version"`
+	Creator         Person             `json:"creator"`
+	Developers      []Person           `json:"developers"`
+	Description     string             `json:"description"`
+	FullDescription string             `json:"fullDescription"`
+	Screenshots     []Screenshot       `json:"screenshots"`
+	HomepageURL     string             `json:"homepageURL"`
+	SupportURL      string             `json:"supportURL"`
+	ContributionURL string             `json:"contributionURL"`
+	AverageRating   float64            `json:"averageRating"` // out of 5
+	ReviewCount     int                `json:"reviewCount"`
+	ReviewURL       string             `json:"reviewURL"`
+	WeeklyDownloads int                `json:"weeklyDownloads"`
+	SourceURI       string             `json:"sourceURI"` // URI to .xpi
+	UpdateDate      timefmt.UnixMilli  `json:"updateDate"`
 }
 
 // Person is an addon creator or developer.

@@ -38,7 +38,7 @@ type Chrome struct {
 }
 
 type AutofillProfile struct {
-	GUID                          string       `json:"guid"`
+	GUID                          string       `json:"guid"` // TODO replace with jsonutil.GUID or jsonutil.BracedGUID
 	NameFull                      []string     `json:"name_full"`
 	NameFirst                     []string     `json:"name_first"`
 	NameMiddle                    []string     `json:"name_middle"`
