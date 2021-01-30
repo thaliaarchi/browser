@@ -49,6 +49,20 @@ No Brave-specific data is currently parsed.
 
 No Edge-specific data is currently parsed.
 
+## Contributing
+
+The project is designed to be strict and reject input that violates any
+assumptions. For example, additional unknown json fields are disallowed,
+which contrasts with the permissive default in `encoding/json`. The goal
+is to prevent any data loss, so it fails early. Several types in the
+structures are still unknown due to a small sample size of data and are
+marked with `jsonutil.UnknownObj` or `jsonutil.UnknownType`. If you
+encounter an error while parsing valid data, please
+[report an issue](https://github.com/andrewarchi/browser/issues).
+
+I am currently seeking information on the
+`Takeout/Chrome/Dictionary.csv` file in Google Takeout.
+
 ## License
 
 This project is made available under the
