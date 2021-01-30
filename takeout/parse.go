@@ -30,8 +30,9 @@ type Export struct {
 
 var exportPattern = regexp.MustCompile(`^takeout-(\d{8}T\d{6}Z)-(\d{3})\.(tgz|zip)$`)
 
-// Open opens a Takeout export.
-func Open(filename string) (*Export, error) {
+// NewExport opens a Takeout export, given the path to the first archive
+// in a multi-part export.
+func NewExport(filename string) (*Export, error) {
 	base := filepath.Base(filename)
 	match := exportPattern.FindStringSubmatch(base)
 	if len(match) != 4 {
@@ -74,7 +75,7 @@ func (ex *Export) Walk(walk archive.WalkFunc) error {
 
 // ParseChrome parses Chrome data in a Takeout export.
 func ParseChrome(filename string) (*Chrome, error) {
-	ex, err := Open(filename)
+	ex, err := NewExport(filename)
 	if err != nil {
 		return nil, err
 	}

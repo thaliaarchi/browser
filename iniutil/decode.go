@@ -15,9 +15,9 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// DecodeINIStrict decodes an INI section into a struct and checks for
-// unknown fields.
-func DecodeINIStrict(section *ini.Section, v interface{}) error {
+// Decode decodes an INI section into a struct and checks for unknown
+// fields.
+func Decode(section *ini.Section, v interface{}) error {
 	typ := reflect.TypeOf(v)
 	if typ.Kind() != reflect.Ptr {
 		return errors.New("ini: not a pointer to a struct")

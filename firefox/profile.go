@@ -104,7 +104,7 @@ func ParseProfiles(firefoxDir string) (*ProfileInfo, error) {
 				return nil, errors.New("firefox: root section has bare keys")
 			}
 		case name == "General":
-			if err := iniutil.DecodeINIStrict(section, &info); err != nil {
+			if err := iniutil.Decode(section, &info); err != nil {
 				return nil, err
 			}
 		case strings.HasPrefix(name, "Profile"):
@@ -163,7 +163,7 @@ func parseProfile(section *ini.Section, id string) (*Profile, error) {
 	}
 	profile.ID = n
 
-	if err := iniutil.DecodeINIStrict(section, &profile); err != nil {
+	if err := iniutil.Decode(section, &profile); err != nil {
 		return nil, err
 	}
 	return &profile, nil
@@ -180,7 +180,7 @@ func parseInstall(section *ini.Section, id string) (*Install, error) {
 	}
 	install.ID = binary.BigEndian.Uint64(b)
 
-	if err := iniutil.DecodeINIStrict(section, &install); err != nil {
+	if err := iniutil.Decode(section, &install); err != nil {
 		return nil, err
 	}
 	return &install, nil
