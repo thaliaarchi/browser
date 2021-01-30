@@ -77,8 +77,8 @@ type Extensions struct {
 }
 
 type Addon struct {
-	ID                     jsonutil.FirefoxID     `json:"id"`
-	SyncGUID               jsonutil.BracedGUID    `json:"syncGUID"`
+	ID                     *jsonutil.FirefoxID    `json:"id"`
+	SyncGUID               *jsonutil.BracedGUID   `json:"syncGUID"`
 	Version                string                 `json:"version"` // addon version
 	Type                   string                 `json:"type"`    // "extension", "theme", "locale", "dictionary"
 	Loader                 jsonutil.UnknownType   `json:"loader"`

@@ -8,24 +8,22 @@
 package takeout
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
 	"time"
 
 	"github.com/andrewarchi/browser/archive"
-	"github.com/andrewarchi/browser/bookmark"
-	"github.com/andrewarchi/browser/jsonutil"
 )
 
 // Export contains the paths to each part in a Takeout export and the
 // time of export. Zip exports are significantly faster to traverse than
 // tgz and should be preferred.
 type Export struct {
-	Time  time.Time // time of export from filename
-	Ext   string    // zip or tgz
-	Parts []string  // paths to multi-part archives
+	Time      time.Time // time of export from filename
+	Timestamp string    // raw timestamp
+	Ext       string    // zip or tgz
+	Parts     []string  // paths to multi-part archives
 }
 
 var exportPattern = regexp.MustCompile(`^takeout-(\d{8}T\d{6}Z)-(\d{3})\.(tgz|zip)$`)
@@ -50,7 +48,7 @@ func NewExport(filename string) (*Export, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Export{t, ext, parts}, nil
+	return &Export{t, timestamp, ext, parts}, nil
 }
 
 // Walk traverses a Takeout export and executes the given walk function
@@ -71,46 +69,4 @@ func (ex *Export) Walk(walk archive.WalkFunc) error {
 		}
 	}
 	return nil
-}
-
-// ParseChrome parses Chrome data in a Takeout export.
-func ParseChrome(filename string) (*Chrome, error) {
-	ex, err := NewExport(filename)
-	if err != nil {
-		return nil, err
-	}
-	data := &Chrome{ExportTime: ex.Time}
-	err = ex.Walk(func(f archive.File) error {
-		name := f.Name()
-		if filepath.Dir(name) != "Takeout/Chrome" {
-			return nil
-		}
-		r, err := f.Open()
-		if err != nil {
-			return err
-		}
-		defer r.Close()
-		switch base := filepath.Base(name); base {
-		case "Autofill.json", "BrowserHistory.json", "Extensions.json",
-			"SearchEngines.json", "SyncSettings.json":
-			return jsonutil.Decode(r, data)
-		case "Bookmarks.html":
-			b, err := bookmark.ParseHTML(r)
-			if err != nil {
-				return err
-			}
-			data.Bookmarks = b
-		case "Dictionary.csv": // TODO unknown structure
-			if f.FileInfo().Size() != 0 {
-				return errors.New("dictionary structure unknown")
-			}
-		default:
-			return errors.New("unknown file")
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
 }
