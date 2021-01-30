@@ -3,6 +3,8 @@
 This library parses and converts data from Firefox- and Chromium-based
 browsers.
 
+[Documentation](https://pkg.go.dev/github.com/andrewarchi/browser)
+
 ## Browsers
 
 ### Firefox

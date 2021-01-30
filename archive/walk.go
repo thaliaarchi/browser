@@ -4,6 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// Package archive traverses zip and tar archives with a common method.
 package archive
 
 import (
@@ -85,6 +86,7 @@ func WalkTar(filename string, walk WalkFunc) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	return walkTar(f, filename, walk)
 }
 
