@@ -17,6 +17,7 @@ import (
 	"github.com/andrewarchi/browser/bookmark"
 	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
+	"github.com/andrewarchi/browser/jsonutil/uuid"
 )
 
 type Chrome struct {
@@ -43,29 +44,29 @@ type Chrome struct {
 }
 
 type AutofillProfile struct {
-	GUID                          *jsonutil.GUID `json:"guid"`
-	NameFull                      []string       `json:"name_full"`
-	NameFirst                     []string       `json:"name_first"`
-	NameMiddle                    []string       `json:"name_middle"`
-	NameLast                      []string       `json:"name_last"`
-	AddressHomeStreetAddress      string         `json:"address_home_street_address"`
-	AddressHomeLine1              string         `json:"address_home_line1"`
-	AddressHomeLine2              string         `json:"address_home_line2"`
-	AddressHomeCity               string         `json:"address_home_city"`
-	AddressHomeState              string         `json:"address_home_state"`
-	AddressHomeZip                string         `json:"address_home_zip"`
-	AddressHomeCountry            string         `json:"address_home_country"`
-	AddressHomeSortingCode        string         `json:"address_home_sorting_code"`
-	AddressHomeLanguageCode       string         `json:"address_home_language_code"`
-	AddressHomeDependentLocality  string         `json:"address_home_dependent_locality"`
-	EmailAddress                  []string       `json:"email_address"`
-	PhoneHomeWholeNumber          []string       `json:"phone_home_whole_number"`
-	Origin                        string         `json:"origin"`
-	IsClientValidityStatesUpdated bool           `json:"is_client_validity_states_updated"`
-	UseCount                      int            `json:"use_count"`
-	ValidityStateBitfield         uint64         `json:"validity_state_bitfield"` // TODO unknown states
-	CompanyName                   string         `json:"company_name"`
-	UseDate                       timefmt.Unix   `json:"use_date"`
+	GUID                          *uuid.GUID   `json:"guid"`
+	NameFull                      []string     `json:"name_full"`
+	NameFirst                     []string     `json:"name_first"`
+	NameMiddle                    []string     `json:"name_middle"`
+	NameLast                      []string     `json:"name_last"`
+	AddressHomeStreetAddress      string       `json:"address_home_street_address"`
+	AddressHomeLine1              string       `json:"address_home_line1"`
+	AddressHomeLine2              string       `json:"address_home_line2"`
+	AddressHomeCity               string       `json:"address_home_city"`
+	AddressHomeState              string       `json:"address_home_state"`
+	AddressHomeZip                string       `json:"address_home_zip"`
+	AddressHomeCountry            string       `json:"address_home_country"`
+	AddressHomeSortingCode        string       `json:"address_home_sorting_code"`
+	AddressHomeLanguageCode       string       `json:"address_home_language_code"`
+	AddressHomeDependentLocality  string       `json:"address_home_dependent_locality"`
+	EmailAddress                  []string     `json:"email_address"`
+	PhoneHomeWholeNumber          []string     `json:"phone_home_whole_number"`
+	Origin                        string       `json:"origin"`
+	IsClientValidityStatesUpdated bool         `json:"is_client_validity_states_updated"`
+	UseCount                      int          `json:"use_count"`
+	ValidityStateBitfield         uint64       `json:"validity_state_bitfield"` // TODO unknown states
+	CompanyName                   string       `json:"company_name"`
+	UseDate                       timefmt.Unix `json:"use_date"`
 }
 
 type BrowserHistory struct {

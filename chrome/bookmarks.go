@@ -9,6 +9,7 @@ package chrome
 import (
 	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
+	"github.com/andrewarchi/browser/jsonutil/uuid"
 )
 
 // Bookmarks contains Chrome bookmark information.
@@ -31,7 +32,7 @@ type BookmarkEntry struct {
 	Children     []BookmarkEntry      `json:"children"` // for folder type only
 	DateAdded    timefmt.QuotedChrome `json:"date_added"`
 	DateModified timefmt.QuotedChrome `json:"date_modified,omitempty"` // for folder type only
-	GUID         *jsonutil.GUID       `json:"guid"`
+	GUID         *uuid.GUID           `json:"guid"`
 	ID           string               `json:"id"` // i.e. "567"
 	Name         string               `json:"name"`
 	Type         string               `json:"type"` // "folder" or "url"

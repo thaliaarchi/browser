@@ -9,6 +9,7 @@ package firefox
 import (
 	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
+	"github.com/andrewarchi/browser/jsonutil/uuid"
 )
 
 // ExtensionSettings contains preferences and commands set by extensions
@@ -77,8 +78,8 @@ type Extensions struct {
 }
 
 type Addon struct {
-	ID                     *jsonutil.FirefoxID    `json:"id"`
-	SyncGUID               *jsonutil.BracedGUID   `json:"syncGUID"`
+	ID                     *uuid.FirefoxID        `json:"id"`
+	SyncGUID               *uuid.BracedGUID       `json:"syncGUID"`
 	Version                string                 `json:"version"` // addon version
 	Type                   string                 `json:"type"`    // "extension", "theme", "locale", "dictionary"
 	Loader                 jsonutil.UnknownType   `json:"loader"`

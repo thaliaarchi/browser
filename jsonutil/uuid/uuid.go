@@ -4,12 +4,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package jsonutil
+// Package uuid encodes and decodes UUIDs.
+package uuid
 
 import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
+
+	"github.com/andrewarchi/browser/jsonutil"
 )
 
 // EncodeGUID formats a GUID as "01234567-89ab-cdef-0123-456789abcdef".
@@ -101,7 +104,7 @@ func (g *GUID) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	b, err := UnquoteSimple(data)
+	b, err := jsonutil.UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
@@ -131,7 +134,7 @@ func (g *BracedGUID) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	b, err := UnquoteSimple(data)
+	b, err := jsonutil.UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
@@ -170,7 +173,7 @@ func (id *FirefoxID) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
 		return nil
 	}
-	b, err := UnquoteSimple(data)
+	b, err := jsonutil.UnquoteSimple(data)
 	if err != nil {
 		return err
 	}
