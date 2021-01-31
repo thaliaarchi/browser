@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/andrewarchi/browser/chrome"
@@ -22,19 +23,19 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-type Export struct {
+type AnalysisExport struct {
 	Date   time.Time // date of export
-	Visits []ExportVisit
+	Visits []AnalysisExportVisit
 }
 
-type ExportVisit struct {
+type AnalysisExportVisit struct {
 	URL            string
 	VisitTime      time.Time
 	TransitionType chrome.TransitionType
 	PageTitle      string
 }
 
-func ParseExport(filename string) (*Export, error) {
+func ParseAnalysisExport(filename string) (*AnalysisExport, error) {
 	// exported_analysis_history_20060102_150405.tsv
 	var r io.Reader
 	switch ext := filepath.Ext(filename); ext {
@@ -56,10 +57,11 @@ func ParseExport(filename string) (*Export, error) {
 		return nil, fmt.Errorf("historytrends: bad file extension: %s", ext)
 	}
 
-	var export Export
+	var export AnalysisExport
 	cr := csv.NewReader(r)
 	cr.Comma = '\t'
 	cr.FieldsPerRecord = 8
+	cr.LazyQuotes = true
 	for line := 1; ; line++ {
 		record, err := cr.Read()
 		if err == io.EOF {
@@ -77,19 +79,19 @@ func ParseExport(filename string) (*Export, error) {
 	return &export, nil
 }
 
-func parseExportVisit(record []string) (*ExportVisit, error) {
+func parseExportVisit(record []string) (*AnalysisExportVisit, error) {
 	/*
 		"Export These Results" format
 		chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
 
-		0: URL              visited URL
-		1: Host*            hostname of visited URL
-		2: Domain*          public suffix of visited URL
-		3: Visit Time       visit time in milliseconds since 1970-01-01 i.e. 1384634958041.754
-		4: Visit Time       visit time in local time                    i.e. 2006-01-02 15:04:05.000
-		5: Day of Week      day of the week for the visit time          0 for Sunday
-		6: Transition Type  how the browser navigated to the URL        i.e. link
-		7: Page Title*      page title of visited URL
+		0: URL                  visited URL
+		1: Host*                hostname of visited URL
+		2: Domain*              public suffix of visited URL
+		3: Visit Time (ms)      visit time in milliseconds since 1970-01-01 i.e. 1384634958041.754
+		4: Visit Time (string)  visit time in local time                    i.e. 2013-11-16 14:49:18.041
+		5: Day of Week          day of the week for the visit time          0 for Sunday
+		6: Transition Type      how the browser navigated to the URL        i.e. link
+		7: Page Title*          page title of visited URL
 		* optional
 	*/
 
@@ -99,32 +101,45 @@ func parseExportVisit(record []string) (*ExportVisit, error) {
 		if err != nil {
 			return nil, err
 		}
-		if u.Host != host {
-			return nil, fmt.Errorf("%q differs from computed host %q", host, u.Host)
+		if h := u.Hostname(); h != host {
+			// When the URL path contains @, utils.extractHost in utils.js
+			// will erroneously return the segment after the @.
+			// For example, extractHost reports that the host of
+			// https://web.archive.org/save/https://medium.com/@user/article
+			// is "user" instead of "web.archive.org".
+			if strings.IndexByte(u.Path, '@') == -1 {
+				return nil, fmt.Errorf("%q differs from computed host %q", host, h)
+			}
 		}
 	}
 	if domain != "" {
-		if d, _ := publicsuffix.PublicSuffix(rawURL); d != domain {
-			return nil, fmt.Errorf("%q differs from computed domain %q", domain, d)
+		tld1, err := publicsuffix.EffectiveTLDPlusOne(host)
+		if err != nil {
+			return nil, err
+		}
+		if tld1 != domain {
+			return nil, fmt.Errorf("%q differs from computed eTLD+1 %q", domain, tld1)
 		}
 	}
 
-	// TODO handle local time
-	timeMs, err := strconv.ParseInt(record[3], 10, 64)
+	timeMsec, err := timefmt.ParseMilliFrac(record[3])
 	if err != nil {
 		return nil, err
 	}
-	t1 := timefmt.FromUnixMilli(timeMs)
-	t2, err := time.Parse("2006-01-02 15:04:05.000", record[4])
-	if t1 != t2 {
-		return nil, fmt.Errorf("inconsistent visit times: %s and %s", t1, t2)
-	}
+	timeLocal, err := time.Parse("2006-01-02 15:04:05.000", record[4])
+	// timeMsec and timeLocal both represent the same time. timeMsec is
+	// in UTC with sub-millisecond precision. timeLocal is local, at the
+	// time of export, and has truncated millisecond precision.
+	diff := (timeMsec.Sub(timeLocal) / time.Millisecond) * time.Millisecond
+	// TODO handle timezone
+	_ = diff
+	// return nil, fmt.Errorf("inconsistent visit times: %s and %s", timeMsec, timeLocal)
 
 	day, err := strconv.Atoi(record[5])
 	if err != nil {
 		return nil, err
 	}
-	if d := t1.Weekday(); d != time.Weekday(day) {
+	if d := timeLocal.Weekday(); d != time.Weekday(day) {
 		return nil, fmt.Errorf("inconsistent weekday: %s and %s", time.Weekday(day), d)
 	}
 
@@ -133,9 +148,9 @@ func parseExportVisit(record []string) (*ExportVisit, error) {
 		return nil, err
 	}
 
-	return &ExportVisit{
+	return &AnalysisExportVisit{
 		URL:            rawURL,
-		VisitTime:      t1,
+		VisitTime:      timeMsec,
 		TransitionType: transition,
 		PageTitle:      record[7],
 	}, nil

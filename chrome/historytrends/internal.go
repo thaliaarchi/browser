@@ -14,7 +14,7 @@ type fullURL struct {
 	URL        string // unique
 	Host       string // derived from URL
 	RootDomain string // derived from Host
-	Title      string // /\s+/ is normalized to ' '
+	Title      string // /[\t\r\n]+/ is normalized to ' ' then /\s\s+/ to ' '
 }
 
 // fullVisit represents an entry in the SQL visits table, defined in

@@ -12,16 +12,28 @@ import (
 	"time"
 )
 
-type MilliFrac struct{ time.Time }
-
-func (t *MilliFrac) UnmarshalJSON(data []byte) error {
-	msec, nsec, err := splitFrac(string(data), 6)
+func ParseMilliFrac(s string) (time.Time, error) {
+	msec, nsec, err := splitFrac(s, 6)
 	if err != nil {
-		return err
+		return time.Time{}, err
 	}
 	sec := msec / 1e3
 	nsec += (msec % 1e3) * 1e6
-	*t = MilliFrac{time.Unix(sec, nsec).UTC()}
+	return time.Unix(sec, nsec).UTC(), nil
+}
+
+type MilliFrac struct{ time.Time }
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (t *MilliFrac) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+	m, err := ParseMilliFrac(string(data))
+	if err != nil {
+		return err
+	}
+	*t = MilliFrac{m}
 	return nil
 }
 
