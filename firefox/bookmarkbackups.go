@@ -23,7 +23,7 @@ type BookmarkBackup struct {
 	Date       time.Time // date of backup
 	Count      int       // number of entries
 	Hash       []byte    // hash of json contents
-	Compressed bool      // true when mozlz4 compressed
+	Compressed bool      // true when mozLz4-compressed
 	Bookmarks  *BookmarkBackupEntry
 }
 

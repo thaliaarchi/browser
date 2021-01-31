@@ -8,6 +8,7 @@ package firefox
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,6 +24,7 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, profile := range profiles {
+		fmt.Println(profile)
 		if fi, err := os.Stat(profile); err == nil && !fi.IsDir() {
 			continue
 		}

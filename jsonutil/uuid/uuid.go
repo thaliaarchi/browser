@@ -158,7 +158,7 @@ func (id FirefoxID) String() string {
 		return id.ID
 	}
 	if id.UUID != nil {
-		return id.UUID.Encode(Normal)
+		return id.UUID.Encode(Braced)
 	}
 	return ""
 }
