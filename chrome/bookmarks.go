@@ -32,8 +32,8 @@ type BookmarkEntry struct {
 	Children     []BookmarkEntry      `json:"children"` // for folder type only
 	DateAdded    timefmt.QuotedChrome `json:"date_added"`
 	DateModified timefmt.QuotedChrome `json:"date_modified,omitempty"` // for folder type only
-	GUID         *uuid.GUID           `json:"guid"`
-	ID           string               `json:"id"` // i.e. "567"
+	GUID         *uuid.UUID           `json:"guid"`                    // "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+	ID           string               `json:"id"`                      // i.e. "567"
 	Name         string               `json:"name"`
 	Type         string               `json:"type"` // "folder" or "url"
 	MetaInfo     *BookmarkMetaInfo    `json:"meta_info,omitempty"`

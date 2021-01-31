@@ -44,7 +44,7 @@ type Chrome struct {
 }
 
 type AutofillProfile struct {
-	GUID                          *uuid.GUID   `json:"guid"`
+	GUID                          *uuid.UUID   `json:"guid"` // "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	NameFull                      []string     `json:"name_full"`
 	NameFirst                     []string     `json:"name_first"`
 	NameMiddle                    []string     `json:"name_middle"`

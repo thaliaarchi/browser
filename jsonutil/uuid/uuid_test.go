@@ -8,21 +8,36 @@ package uuid
 
 import "testing"
 
-var guid = [16]byte{
+var uuid = UUID{
 	0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
 	0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef}
 
-const guidStr = "01234567-89ab-cdef-0123-456789abcdef"
-const bracedGUIDStr = "{01234567-89ab-cdef-0123-456789abcdef}"
+var tests = []struct {
+	UUID   UUID
+	Str    string
+	Format Format
+}{
+	{uuid, "01234567-89ab-cdef-0123-456789abcdef", Normal},
+	{uuid, "{01234567-89ab-cdef-0123-456789abcdef}", Braced},
+}
 
-func TestEncodeGUID(t *testing.T) {
-	if s := EncodeGUID(guid); s != guidStr {
-		t.Errorf("EncodeGUID: got %q, want %q", s, guidStr)
+func TestEncode(t *testing.T) {
+	for _, test := range tests {
+		if s := test.UUID.Encode(test.Format); s != test.Str {
+			t.Errorf("%q.Encode(%d) = %q, want %q", test.UUID, test.Format, s, test.Str)
+		}
 	}
 }
 
-func TestEncodeBracedGUID(t *testing.T) {
-	if s := EncodeBracedGUID(guid); s != bracedGUIDStr {
-		t.Errorf("EncodeBracedGUID: got %q, want %q", s, bracedGUIDStr)
+func TestDecode(t *testing.T) {
+	for _, test := range tests {
+		uuid, err := Decode(test.Str)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		if *uuid != test.UUID {
+			t.Errorf("Decode(%q) = %q, want %q", test.Str, uuid, test.UUID)
+		}
 	}
 }
