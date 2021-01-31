@@ -2,6 +2,7 @@
 *.jsonlz4
 *.html
 *.csv
+*.tsv
 *.ini
 *.zip
 *.tgz

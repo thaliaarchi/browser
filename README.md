@@ -43,6 +43,12 @@ Google Takeout files currently parsed:
 - `Takeout/Chrome/SearchEngines.json`
 - `Takeout/Chrome/SyncSettings.json`
 
+#### History Trends Unlimited (extension)
+
+History Trends Unlimited files currently parsed:
+
+- `exported_analysis_history_{date}_{time}.tsv`
+
 #### Brave
 
 No Brave-specific data is currently parsed.
