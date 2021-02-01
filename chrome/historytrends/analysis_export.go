@@ -136,7 +136,7 @@ func openExport(filename string) (io.ReadCloser, string, error) {
 }
 
 func parseTimes(timeMsec, timeLocal, weekday string) (time.Time, int, error) {
-	tMsec, err := timefmt.ParseMilliFrac(timeMsec)
+	tMsec, err := timefmt.Parse(timeMsec, timefmt.Milli, timefmt.Unix)
 	if err != nil {
 		return time.Time{}, 0, err
 	}

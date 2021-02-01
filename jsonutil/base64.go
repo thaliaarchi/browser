@@ -44,14 +44,7 @@ func (b Base64) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (b *Base64) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		return nil
-	}
-	q, err := UnquoteSimple(data)
-	if err != nil {
-		return err
-	}
-	return b.UnmarshalText(q)
+	return QuotedUnmarshal(data, b.UnmarshalText)
 }
 
 func (b Base64) String() string {

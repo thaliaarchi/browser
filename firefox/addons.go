@@ -21,7 +21,7 @@ type Addons struct {
 
 // AddonInfo contains addon information from addons.mozilla.org.
 type AddonInfo struct {
-	ID              *uuid.FirefoxID   `json:"id"`
+	ID              *uuid.Firefox     `json:"id"`
 	Icons           map[int]string    `json:"icons"` // key: icon size, value: path
 	Type            string            `json:"type"`  // i.e. "extension", "locale", "dictionary"
 	Name            string            `json:"name"`

@@ -44,14 +44,7 @@ func (h Hex) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (h *Hex) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		return nil
-	}
-	q, err := UnquoteSimple(data)
-	if err != nil {
-		return err
-	}
-	return h.UnmarshalText(q)
+	return QuotedUnmarshal(data, h.UnmarshalText)
 }
 
 func (h Hex) String() string {

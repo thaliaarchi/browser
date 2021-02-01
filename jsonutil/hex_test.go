@@ -8,6 +8,7 @@ package jsonutil
 
 import (
 	"bytes"
+	"encoding/json"
 	"strconv"
 	"testing"
 )
@@ -70,7 +71,7 @@ func TestHexUnmarshalText(t *testing.T) {
 
 func TestHexMarshalJSON(t *testing.T) {
 	for i, test := range marshalJSONTests {
-		enc, err := test.dec.MarshalJSON()
+		enc, err := json.Marshal(test.dec)
 		if err != nil {
 			t.Errorf("#%d: %s", i, err)
 			continue
@@ -84,7 +85,7 @@ func TestHexMarshalJSON(t *testing.T) {
 func TestHexUnmarshalJSON(t *testing.T) {
 	for i, test := range unmarshalJSONTests {
 		var dec Hex
-		if err := dec.UnmarshalJSON([]byte(test.enc)); err != nil {
+		if err := json.Unmarshal([]byte(test.enc), &dec); err != nil {
 			t.Errorf("#%d: %s", i, err)
 			continue
 		}

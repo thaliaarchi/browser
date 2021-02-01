@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -80,19 +79,21 @@ func checkDoctype(doc *goquery.Document, doctype string) error {
 
 func parseFolder(dt *goquery.Selection) (*BookmarkFolder, error) {
 	h3 := dt.ChildrenFiltered("h3").First()
-	addDate, err := parseNumber(h3, "add_date")
+	add := h3.AttrOr("add_date", "")
+	mod := h3.AttrOr("last_modified", "")
+	addDate, err := timefmt.Parse(add, timefmt.Milli, timefmt.Unix)
 	if err != nil {
 		return nil, err
 	}
-	lastModified, err := parseNumber(h3, "last_modified")
+	lastModified, err := timefmt.Parse(mod, timefmt.Milli, timefmt.Unix)
 	if err != nil {
 		return nil, err
 	}
 	entries, err := parseFolderList(dt.ChildrenFiltered("dl").First())
 	f := &BookmarkFolder{
 		Title:        h3.Text(),
-		AddDate:      timefmt.FromUnixMilli(addDate),
-		LastModified: timefmt.FromUnixMilli(lastModified),
+		AddDate:      addDate,
+		LastModified: lastModified,
 		Entries:      entries,
 	}
 	return f, nil
@@ -111,15 +112,16 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 				return false
 			}
 		} else {
-			var addDate int64
-			addDate, err = parseNumber(a, "add_date")
+			var addDate time.Time
+			add := a.AttrOr("add_date", "0")
+			addDate, err = timefmt.Parse(add, timefmt.Micro, timefmt.Windows)
 			if err != nil {
 				return false
 			}
 			e = &Bookmark{
 				Title:   a.Text(),
 				URL:     a.AttrOr("href", ""),
-				AddDate: timefmt.FromChrome(addDate),
+				AddDate: addDate,
 				IconURI: a.AttrOr("icon_uri", ""),
 			}
 		}
@@ -127,8 +129,4 @@ func parseFolderList(dl *goquery.Selection) ([]BookmarkEntry, error) {
 		return true
 	})
 	return entries, err
-}
-
-func parseNumber(e *goquery.Selection, attr string) (int64, error) {
-	return strconv.ParseInt(e.AttrOr(attr, "0"), 10, 64)
 }

@@ -30,17 +30,20 @@ const (
 type UUID [16]byte
 
 // Encode encodes a UUID in the given format.
-func (uuid UUID) Encode(format Format) string {
+func (uuid *UUID) Encode(format Format) []byte {
+	if uuid == nil {
+		return nil
+	}
 	if format == Braced {
 		var buf [38]byte
 		buf[0] = '{'
-		encode(buf[1:37], uuid)
+		encode(buf[1:37], *uuid)
 		buf[37] = '}'
-		return string(buf[:])
+		return buf[:]
 	}
 	var buf [36]byte
-	encode(buf[:], uuid)
-	return string(buf[:])
+	encode(buf[:], *uuid)
+	return buf[:]
 }
 
 func encode(dst []byte, uuid [16]byte) {
@@ -56,7 +59,7 @@ func encode(dst []byte, uuid [16]byte) {
 }
 
 // Decode decodes a UUID.
-func Decode(uuid string) (*UUID, error) {
+func Decode(uuid []byte) (*UUID, error) {
 	if len(uuid) == 38 {
 		if uuid[0] != '{' || uuid[37] != '}' {
 			return nil, fmt.Errorf("uuid: invalid braced UUID: %q", uuid)
@@ -86,21 +89,14 @@ func Decode(uuid string) (*UUID, error) {
 	return &dst, nil
 }
 
-// MarshalJSON implements the json.Marshaler interface.
-func (uuid UUID) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.Quote(uuid.Encode(Normal))), nil
+// MarshalText implements the encoding.TextMarshaler interface.
+func (uuid *UUID) MarshalText() ([]byte, error) {
+	return uuid.Encode(Normal), nil
 }
 
-// UnmarshalJSON implements the json.Unmarshaler interface.
-func (uuid *UUID) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		return nil
-	}
-	b, err := jsonutil.UnquoteSimple(data)
-	if err != nil {
-		return err
-	}
-	u, err := Decode(string(b))
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (uuid *UUID) UnmarshalText(data []byte) error {
+	u, err := Decode(data)
 	if err != nil {
 		return err
 	}
@@ -108,57 +104,19 @@ func (uuid *UUID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (uuid UUID) String() string {
-	return uuid.Encode(Normal)
-}
-
-// FirefoxID is an ID or UUID and is used by Firefox addons. ID is
-// preferred for display.
-type FirefoxID struct {
-	ID   string // i.e. "addon@example.com"
-	UUID *UUID  // i.e. "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
-}
-
 // MarshalJSON implements the json.Marshaler interface.
-func (id FirefoxID) MarshalJSON() ([]byte, error) {
-	if id.ID != "" {
-		return []byte(strconv.Quote(id.ID)), nil
+func (uuid *UUID) MarshalJSON() ([]byte, error) {
+	if uuid == nil {
+		return []byte("null"), nil
 	}
-	if id.UUID != nil {
-		return id.UUID.MarshalJSON()
-	}
-	return []byte("null"), nil
+	return []byte(strconv.Quote(string(uuid.Encode(Normal)))), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
-func (id *FirefoxID) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		return nil
-	}
-	b, err := jsonutil.UnquoteSimple(data)
-	if err != nil {
-		return err
-	}
-	var i FirefoxID
-	if b[0] == '{' && b[len(b)-1] == '}' {
-		uuid, err := Decode(string(b))
-		if err != nil {
-			return err
-		}
-		i.UUID = uuid
-	} else {
-		i.ID = string(b)
-	}
-	*id = i
-	return nil
+func (uuid *UUID) UnmarshalJSON(data []byte) error {
+	return jsonutil.QuotedUnmarshal(data, uuid.UnmarshalText)
 }
 
-func (id FirefoxID) String() string {
-	if id.ID != "" {
-		return id.ID
-	}
-	if id.UUID != nil {
-		return id.UUID.Encode(Braced)
-	}
-	return ""
+func (uuid *UUID) String() string {
+	return string(uuid.Encode(Normal))
 }
