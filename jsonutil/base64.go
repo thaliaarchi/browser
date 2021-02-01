@@ -11,9 +11,27 @@ import "encoding/base64"
 // Base64 is a byte slice that is formatted in json as a base64 string.
 type Base64 []byte
 
+// MarshalText implements the encoding.TextMarshaler interface.
+func (b Base64) MarshalText() ([]byte, error) {
+	buf := make([]byte, base64.StdEncoding.EncodedLen(len(b)))
+	base64.StdEncoding.Encode(buf, b)
+	return buf, nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (b *Base64) UnmarshalText(data []byte) error {
+	buf := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+	n, err := base64.StdEncoding.Decode(buf, data)
+	if err != nil {
+		return err
+	}
+	*b = buf[:n]
+	return nil
+}
+
 // MarshalJSON implements the json.Marshaler interface.
 func (b Base64) MarshalJSON() ([]byte, error) {
-	if len(b) == 0 {
+	if b == nil {
 		return []byte("null"), nil
 	}
 	n := base64.StdEncoding.EncodedLen(len(b))
@@ -33,13 +51,7 @@ func (b *Base64) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]byte, base64.StdEncoding.DecodedLen(len(q)))
-	n, err := base64.StdEncoding.Decode(buf, q)
-	if err != nil {
-		return err
-	}
-	*b = buf[:n]
-	return nil
+	return b.UnmarshalText(q)
 }
 
 func (b Base64) String() string {

@@ -12,9 +12,26 @@ import "encoding/hex"
 // string.
 type Hex []byte
 
+// MarshalText implements the encoding.TextMarshaler interface.
+func (h Hex) MarshalText() ([]byte, error) {
+	buf := make([]byte, hex.EncodedLen(len(h)))
+	hex.Encode(buf[:], h)
+	return buf, nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (h *Hex) UnmarshalText(data []byte) error {
+	buf := make([]byte, hex.DecodedLen(len(data)))
+	if _, err := hex.Decode(buf, data); err != nil {
+		return err
+	}
+	*h = buf
+	return nil
+}
+
 // MarshalJSON implements the json.Marshaler interface.
 func (h Hex) MarshalJSON() ([]byte, error) {
-	if len(h) == 0 {
+	if h == nil {
 		return []byte("null"), nil
 	}
 	n := hex.EncodedLen(len(h))
@@ -34,12 +51,7 @@ func (h *Hex) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]byte, hex.DecodedLen(len(q)))
-	if _, err = hex.Decode(buf, q); err != nil {
-		return err
-	}
-	*h = buf
-	return nil
+	return h.UnmarshalText(q)
 }
 
 func (h Hex) String() string {
