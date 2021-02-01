@@ -41,9 +41,9 @@ func FromInt(n, nsec int64, unit Unit, epoch Epoch) time.Time {
 		panic(fmt.Sprintf("negative time: %d", n))
 	}
 	e := int64(exp[unit])
-	e0 := int64(exp[9-unit])
+	e0 := int64(exp[Nano-unit])
 	sec := n / e
-	nsec += (n % e) / e0
+	nsec += (n % e) * e0
 	switch epoch {
 	case Unix:
 		return time.Unix(sec, nsec).UTC()
@@ -61,7 +61,7 @@ func ToInt(t time.Time, unit Unit, epoch Epoch) (n, nsec int64) {
 		return 0, 0
 	}
 	e := int64(exp[unit])
-	e0 := int64(exp[9-unit])
+	e0 := int64(exp[Nano-unit])
 	switch epoch {
 	case Unix:
 		sec, nsec := t.Unix(), t.UnixNano()/1e9
@@ -90,7 +90,7 @@ func splitFrac(num string, unit Unit) (n, nsec int64, err error) {
 		if err != nil {
 			return
 		}
-		nsec *= int64(exp[int(unit)-len(frac)])
+		nsec *= int64(exp[int(Nano-unit)-len(frac)])
 		num = num[:i]
 	}
 	n, err = strconv.ParseInt(num, 10, 64)
@@ -112,4 +112,28 @@ func Append(b []byte, t time.Time, unit Unit, epoch Epoch) []byte {
 		b = strconv.AppendInt(b, nsec, 10)
 	}
 	return b
+}
+
+func (e Epoch) String() string {
+	switch e {
+	case Unix:
+		return "unix"
+	case Windows:
+		return "windows"
+	default:
+		return fmt.Sprintf("epoch(%d)", e)
+	}
+}
+
+func (u Unit) String() string {
+	switch u {
+	case Sec:
+		return "sec"
+	case Milli:
+		return "milli"
+	case Micro:
+		return "micro"
+	default:
+		return fmt.Sprintf("unit(%d)", u)
+	}
 }

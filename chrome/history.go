@@ -86,6 +86,6 @@ func (typ TransitionType) String() string {
 	case KeywordGenerated:
 		return "keyword_generated"
 	default:
-		return fmt.Sprintf("invalid(%d)", uint8(typ))
+		return fmt.Sprintf("transition_type(%d)", uint8(typ))
 	}
 }
