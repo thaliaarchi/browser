@@ -31,7 +31,7 @@ type QuotedChrome struct{ time.Time }
 
 // MarshalText implements the text.Marshaler interface.
 func (t QuotedChrome) MarshalText() ([]byte, error) {
-	return Format(t.Time, Micro, Windows), nil
+	return FormatBytes(t.Time, Micro, Windows), nil
 }
 
 // MarshalJSON implements the json.Marshaler interface.

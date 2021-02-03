@@ -97,7 +97,11 @@ func splitFrac(num string, unit Unit) (n, nsec int64, err error) {
 	return
 }
 
-func Format(t time.Time, unit Unit, epoch Epoch) []byte {
+func Format(t time.Time, unit Unit, epoch Epoch) string {
+	return string(FormatBytes(t, unit, epoch))
+}
+
+func FormatBytes(t time.Time, unit Unit, epoch Epoch) []byte {
 	return Append(nil, t, unit, epoch)
 }
 

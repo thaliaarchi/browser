@@ -92,28 +92,28 @@ func (t WindowsMicro) Unit() Unit { return Micro }
 func (t WindowsNano) Unit() Unit { return Nano }
 
 // MarshalText implements the text.Marshaler interface.
-func (t UnixSec) MarshalText() ([]byte, error) { return Format(t.Time, Sec, Unix), nil }
+func (t UnixSec) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Sec, Unix), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t UnixMilli) MarshalText() ([]byte, error) { return Format(t.Time, Milli, Unix), nil }
+func (t UnixMilli) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Milli, Unix), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t UnixMicro) MarshalText() ([]byte, error) { return Format(t.Time, Micro, Unix), nil }
+func (t UnixMicro) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Micro, Unix), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t UnixNano) MarshalText() ([]byte, error) { return Format(t.Time, Nano, Unix), nil }
+func (t UnixNano) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Nano, Unix), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t WindowsSec) MarshalText() ([]byte, error) { return Format(t.Time, Sec, Windows), nil }
+func (t WindowsSec) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Sec, Windows), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t WindowsMilli) MarshalText() ([]byte, error) { return Format(t.Time, Milli, Windows), nil }
+func (t WindowsMilli) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Milli, Windows), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t WindowsMicro) MarshalText() ([]byte, error) { return Format(t.Time, Micro, Windows), nil }
+func (t WindowsMicro) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Micro, Windows), nil }
 
 // MarshalText implements the text.Marshaler interface.
-func (t WindowsNano) MarshalText() ([]byte, error) { return Format(t.Time, Nano, Windows), nil }
+func (t WindowsNano) MarshalText() ([]byte, error) { return FormatBytes(t.Time, Nano, Windows), nil }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t UnixSec) MarshalJSON() ([]byte, error) { return t.MarshalText() }
