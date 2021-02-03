@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// Package historytrends parses Chromium browsing history exports from
+// the History Trends Unlimited extension.
 package historytrends
 
 import (
@@ -28,10 +30,10 @@ type Export struct {
 
 // Visit is a page visit in browsing history.
 type Visit struct {
-	URL            string
-	VisitTime      time.Time // UTC
-	TransitionType chrome.TransitionType
-	PageTitle      string
+	URL        string
+	VisitTime  time.Time // UTC
+	Transition chrome.PageTransition
+	PageTitle  string
 }
 
 type exportReader struct {
@@ -50,7 +52,7 @@ func newExportReader(filename string, fieldsPerRecord int) (*exportReader, error
 	cr.Comma = '\t'
 	cr.FieldsPerRecord = fieldsPerRecord
 	cr.LazyQuotes = true
-	return &exportReader{cr, r, name, 0}, nil
+	return &exportReader{cr, r, filepath.Base(name), 0}, nil
 }
 
 func openExport(filename string) (io.ReadCloser, string, error) {

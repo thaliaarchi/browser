@@ -11,82 +11,101 @@ import (
 	"strings"
 )
 
-// Transition types documentation:
+// Page transition types documentation:
 // https://developer.chrome.com/docs/extensions/reference/history/#transition-types
-//
-// See page_transition_types.h in Chromium.
+// Chromium source:
+// https://source.chromium.org/chromium/chromium/src/+/master:ui/base/page_transition_types.h
 
-type TransitionType uint8
+// PageTransition is a type of transition between pages. A type is made
+// of one core value and a set of zero or more qualifiers.
+type PageTransition uint32
 
-// TODO make sure TransitionType values have the same int vales as Chrome.
-
+// Values for PageTransition:
 const (
-	_                TransitionType = iota
-	Link                            // link
-	Typed                           // typed
-	AutoBookmark                    // auto_bookmark
-	AutoSubframe                    // auto_subframe
-	ManualSubframe                  // manual_subframe
-	Generated                       // generated
-	AutoToplevel                    // auto_toplevel
-	FormSubmit                      // form_submit
-	Reload                          // reload
-	Keyword                         // keyword
-	KeywordGenerated                // keyword_generated
+	TransitionFirst            PageTransition = TransitionLink
+	TransitionLink             PageTransition = 0
+	TransitionTyped            PageTransition = 1
+	TransitionAutoBookmark     PageTransition = 2
+	TransitionAutoSubframe     PageTransition = 3
+	TransitionManualSubframe   PageTransition = 4
+	TransitionGenerated        PageTransition = 5
+	TransitionAutoToplevel     PageTransition = 6
+	TransitionFormSubmit       PageTransition = 7
+	TransitionReload           PageTransition = 8
+	TransitionKeyword          PageTransition = 9
+	TransitionKeywordGenerated PageTransition = 10
+	TransitionLastCore         PageTransition = TransitionKeywordGenerated
+	TransitionCoreMask         PageTransition = 0xFF
+
+	TransitionFromAPI3       PageTransition = 0x00200000
+	TransitionFromAPI2       PageTransition = 0x00400000
+	TransitionBlocked        PageTransition = 0x00800000
+	TransitionForwardBack    PageTransition = 0x01000000
+	TransitionFromAddressBar PageTransition = 0x02000000
+	TransitionHomePage       PageTransition = 0x04000000
+	TransitionFromAPI        PageTransition = 0x08000000
+	TransitionChainStart     PageTransition = 0x10000000
+	TransitionChainEnd       PageTransition = 0x20000000
+	TransitionClientRedirect PageTransition = 0x40000000
+	TransitionServerRedirect PageTransition = 0x80000000
+	TransitionIsRedirectMask PageTransition = 0xC0000000
+	TransitionQualifierMask  PageTransition = 0xFFFFFF00
 )
 
-func TransitionTypeFromString(typ string) (TransitionType, error) {
+// PageTransitionFromString returns the page transition core value
+// corresponding to the string.
+func PageTransitionFromString(typ string) (PageTransition, error) {
 	switch strings.ToLower(typ) {
 	case "link":
-		return Link, nil
+		return TransitionLink, nil
 	case "typed":
-		return Typed, nil
+		return TransitionTyped, nil
 	case "auto_bookmark":
-		return AutoBookmark, nil
+		return TransitionAutoBookmark, nil
 	case "auto_subframe":
-		return AutoSubframe, nil
+		return TransitionAutoSubframe, nil
 	case "manual_subframe":
-		return ManualSubframe, nil
+		return TransitionManualSubframe, nil
 	case "generated":
-		return Generated, nil
+		return TransitionGenerated, nil
 	case "auto_toplevel":
-		return AutoToplevel, nil
+		return TransitionAutoToplevel, nil
 	case "form_submit":
-		return FormSubmit, nil
+		return TransitionFormSubmit, nil
 	case "reload":
-		return Reload, nil
+		return TransitionReload, nil
 	case "keyword":
-		return Keyword, nil
+		return TransitionKeyword, nil
 	case "keyword_generated":
-		return KeywordGenerated, nil
+		return TransitionKeywordGenerated, nil
 	default:
-		return 0, fmt.Errorf("chrome: illegal transition type: %q", typ)
+		return 0, fmt.Errorf("chrome: unrecognized transition type: %q", typ)
 	}
 }
 
-func (typ TransitionType) String() string {
-	switch typ {
-	case Link:
+func (typ PageTransition) String() string {
+	switch typ & TransitionCoreMask {
+	case TransitionLink:
 		return "link"
-	case Typed:
+	case TransitionTyped:
 		return "typed"
-	case AutoBookmark:
+	case TransitionAutoBookmark:
 		return "auto_bookmark"
-	case AutoSubframe:
+	case TransitionAutoSubframe:
 		return "auto_subframe"
-	case ManualSubframe:
+	case TransitionManualSubframe:
 		return "manual_subframe"
-	case Generated:
+	case TransitionGenerated:
 		return "generated"
-	case AutoToplevel:
+	case TransitionAutoToplevel:
 		return "auto_toplevel"
-	case FormSubmit:
+	case TransitionFormSubmit:
 		return "form_submit"
-	case Reload:
+	case TransitionReload:
 		return "reload"
-	case Keyword:
+	case TransitionKeyword:
 		return "keyword"
-	case KeywordGenerated:
+	case TransitionKeywordGenerated:
 		return "keyword_generated"
 	default:
 		return fmt.Sprintf("transition_type(%d)", uint8(typ))

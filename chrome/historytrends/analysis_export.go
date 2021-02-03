@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -53,8 +52,8 @@ import (
 	Format docs: chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
 */
 
-// AnalysisExportReader reads the history visits in an
-// exported_analysis_history_{date}.tsv file.
+// AnalysisExportReader reads the browsing history visits in an
+// exported_analysis_history_{date}.{tsv|txt} file.
 type AnalysisExportReader struct {
 	time time.Time // export time
 	tz   int       // timezone offset in seconds
@@ -69,10 +68,9 @@ func OpenAnalysisExport(filename string) (*AnalysisExportReader, error) {
 	if err != nil {
 		return nil, err
 	}
-	base := filepath.Base(r.filename)
-	matches := analysisExportPattern.FindStringSubmatch(base)
+	matches := analysisExportPattern.FindStringSubmatch(r.filename)
 	if len(matches) != 2 {
-		return nil, fmt.Errorf("historytrends: filename is not an analysis export: %q", base)
+		return nil, fmt.Errorf("historytrends: filename is not an analysis export: %q", r.filename)
 	}
 	// Export date omits time before v1.5.2.
 	exportTime := matches[1]
@@ -132,16 +130,18 @@ func (r *AnalysisExportReader) Read() (*Visit, error) {
 			time.Duration(offset)*time.Second, time.Duration(r.tz)*time.Second))
 	}
 
-	transition, err := chrome.TransitionTypeFromString(record[6])
+	// The page transition string only contains the core type, so
+	// qualifiers are lost.
+	transition, err := chrome.PageTransitionFromString(record[6])
 	if err != nil {
 		return nil, r.err(err)
 	}
 
 	return &Visit{
-		URL:            record[0],
-		VisitTime:      t,
-		TransitionType: transition,
-		PageTitle:      normalizeTitle(record[7]),
+		URL:        record[0],
+		VisitTime:  t,
+		Transition: transition,
+		PageTitle:  normalizeTitle(record[7]),
 	}, nil
 }
 
