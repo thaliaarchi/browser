@@ -25,26 +25,41 @@ import (
 )
 
 /*
-	"Export These Results" format
-	chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
+	Analysis Export ("Export These Results")
+
+	An analysis export is a tab-delimited file with the fields listed
+	below. It is created by clicking "Export These Results" on the Trends
+	or Search pages.
 
 	0: URL                  visited URL
 	1: Host*                hostname of visited URL
 	2: Domain*              public suffix of visited URL
-	3: Visit Time (ms)      visit time in milliseconds since 1970-01-01 i.e. 1384634958041.754
-	4: Visit Time (string)  visit time in local time                    i.e. 2013-11-16 14:49:18.041
-	5: Day of Week          day of the week for the visit time          0 for Sunday
-	6: Transition Type      how the browser navigated to the URL        i.e. link
+	3: Visit Time (ms)      visit time in milliseconds since 1970-01-01  i.e. 1384634958041.754
+	4: Visit Time (string)  visit time in local time                     i.e. 2013-11-16 14:49:18.041
+	5: Day of Week          day of the week for the visit time           0 for Sunday
+	6: Transition Type      how the browser navigated to the URL         i.e. link
 	7: Page Title*          page title of visited URL
 	* optional
+
+	Several fields are redundant: host and domain are derived from the
+	URL; visit time (string) and day of week are less precise than visit
+	time (ms). These fields are validated for consistency, then discarded.
+
+	The string-formatted visit time is in local time, at the time of the
+	export, so the timezone of the export is known.
+
+	Filename:
+	exported_analysis_history_{date}_{time}.tsv
+
+	Format docs: chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
 */
 
-type AnalysisExport struct {
+type Export struct {
 	Time   time.Time // time of export
-	Visits []AnalysisExportVisit
+	Visits []ExportVisit
 }
 
-type AnalysisExportVisit struct {
+type ExportVisit struct {
 	URL            string
 	VisitTime      time.Time
 	TransitionType chrome.TransitionType
@@ -55,8 +70,8 @@ var analysisExportPattern = regexp.MustCompile(`^exported_analysis_history_(\d{8
 
 // ParseAnalysisExport parses the history visits in an
 // exported_analysis_history_{date}_{time}.tsv file.
-func ParseAnalysisExport(filename string) (*AnalysisExport, error) {
-	var export AnalysisExport
+func ParseAnalysisExport(filename string) (*Export, error) {
+	var export Export
 	r, name, err := openExport(filename)
 	if err != nil {
 		return nil, err
@@ -79,7 +94,7 @@ func ParseAnalysisExport(filename string) (*AnalysisExport, error) {
 	cr.FieldsPerRecord = 8
 	cr.LazyQuotes = true
 	var tzOffset int
-	for line := 1; ; line++ {
+	for i := 1; ; i++ {
 		record, err := cr.Read()
 		if err == io.EOF {
 			break
@@ -89,14 +104,14 @@ func ParseAnalysisExport(filename string) (*AnalysisExport, error) {
 		}
 
 		if err := checkURL(record[0], record[1], record[2]); err != nil {
-			return nil, lineErr(line, err)
+			return nil, recordErr(i, err)
 		}
 
 		t, offset, err := parseTimes(record[3], record[4], record[5])
 		if err != nil {
-			return nil, lineErr(line, err)
+			return nil, recordErr(i, err)
 		}
-		if line == 1 {
+		if i == 1 {
 			// Attach timezone offset to export time.
 			d := time.Duration(-offset) * time.Second
 			zone := time.FixedZone("", offset)
@@ -104,16 +119,16 @@ func ParseAnalysisExport(filename string) (*AnalysisExport, error) {
 			tzOffset = offset
 		} else if offset != tzOffset {
 			// Check that all visits have same timezone offset.
-			return nil, lineErr(line, fmt.Errorf("%s differs from timezone offset %s",
+			return nil, recordErr(i, fmt.Errorf("%s differs from timezone offset %s",
 				time.Duration(offset)*time.Second, time.Duration(tzOffset)*time.Second))
 		}
 
 		transition, err := chrome.ParseTransitionType(record[6])
 		if err != nil {
-			return nil, lineErr(line, err)
+			return nil, recordErr(i, err)
 		}
 
-		export.Visits = append(export.Visits, AnalysisExportVisit{
+		export.Visits = append(export.Visits, ExportVisit{
 			URL:            record[0],
 			VisitTime:      t,
 			TransitionType: transition,
@@ -136,16 +151,17 @@ func openExport(filename string) (io.ReadCloser, string, error) {
 }
 
 func parseTimes(timeMsec, timeLocal, weekday string) (time.Time, int, error) {
-	tMsec, err := timefmt.Parse(timeMsec, timefmt.Milli, timefmt.Unix)
+	msec, err := timefmt.Parse(timeMsec, timefmt.Milli, timefmt.Unix)
 	if err != nil {
 		return time.Time{}, 0, err
 	}
-	tLocal, err := time.Parse("2006-01-02 15:04:05.000", timeLocal)
+	local, err := time.Parse("2006-01-02 15:04:05.000", timeLocal)
 
-	// tMsec and tLocal both represent the same time. tMsec is in UTC with
-	// sub-millisecond precision. tLocal is local, at the time of export,
-	// and has truncated millisecond precision.
-	diff := tMsec.Truncate(time.Millisecond).Sub(tLocal)
+	// timeMsec and timeLocal both represent the same time. timeMsec is in
+	// UTC with sub-millisecond precision. timeLocal is in the local
+	// timezone at the time of export and has truncated millisecond
+	// precision.
+	diff := msec.Truncate(time.Millisecond).Sub(local)
 	if diff%time.Second != 0 {
 		return time.Time{}, 0, fmt.Errorf("time difference is fractional: %s", diff)
 	}
@@ -155,10 +171,10 @@ func parseTimes(timeMsec, timeLocal, weekday string) (time.Time, int, error) {
 	if err != nil {
 		return time.Time{}, 0, err
 	}
-	if d := tLocal.Weekday(); d != time.Weekday(day) {
+	if d := local.Weekday(); d != time.Weekday(day) {
 		return time.Time{}, 0, fmt.Errorf("inconsistent weekday: %s and %s", time.Weekday(day), d)
 	}
-	return tMsec, offset, nil
+	return msec, offset, nil
 }
 
 func checkURL(rawURL, host, domain string) error {
@@ -200,6 +216,6 @@ func normalizeTitle(title string) string {
 	return spacePattern.ReplaceAllString(title, " ")
 }
 
-func lineErr(line int, err error) error {
-	return fmt.Errorf("historytrends: export on line %d: %w", line, err)
+func recordErr(line int, err error) error {
+	return fmt.Errorf("historytrends: record %d: %w", line, err)
 }
