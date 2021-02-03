@@ -6,7 +6,10 @@
 
 package chrome
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Transition types documentation:
 // https://developer.chrome.com/docs/extensions/reference/history/#transition-types
@@ -32,8 +35,8 @@ const (
 	KeywordGenerated                // keyword_generated
 )
 
-func ParseTransitionType(typ string) (TransitionType, error) {
-	switch typ {
+func TransitionTypeFromString(typ string) (TransitionType, error) {
+	switch strings.ToLower(typ) {
 	case "link":
 		return Link, nil
 	case "typed":

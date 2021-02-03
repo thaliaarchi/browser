@@ -47,8 +47,8 @@ Google Takeout files currently parsed:
 
 History Trends Unlimited files currently parsed:
 
-- `exported_analysis_history_{date}_{time}.tsv`
-- `exported_analysis_history_{date}_{time}.zip`
+- `exported_analysis_history_{date}.tsv`
+- `exported_analysis_history_{date}.txt`
 
 #### Brave
 

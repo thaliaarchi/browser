@@ -7,18 +7,15 @@
 package historytrends
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/andrewarchi/browser/archive"
 	"github.com/andrewarchi/browser/chrome"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
 	"golang.org/x/net/publicsuffix"
@@ -49,105 +46,103 @@ import (
 	export, so the timezone of the export is known.
 
 	Filename:
-	exported_analysis_history_{date}_{time}.tsv
+	exported_analysis_history_{date:20060102_150405}.tsv (>= v1.5.2)
+	exported_analysis_history_{date:20060102}.tsv (< v1.5.2)
+	exported_analysis_history_{date:20060102}.txt (< v1.4.3)
 
 	Format docs: chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
 */
 
-type Export struct {
-	Time   time.Time // time of export
-	Visits []ExportVisit
+// AnalysisExportReader reads the history visits in an
+// exported_analysis_history_{date}.tsv file.
+type AnalysisExportReader struct {
+	time time.Time // export time
+	tz   int       // timezone offset in seconds
+	exportReader
 }
 
-type ExportVisit struct {
-	URL            string
-	VisitTime      time.Time
-	TransitionType chrome.TransitionType
-	PageTitle      string
-}
+var analysisExportPattern = regexp.MustCompile(`^exported_analysis_history_(\d{8}(?:_\d{6})?)\.(?:tsv|txt|zip)$`)
 
-var analysisExportPattern = regexp.MustCompile(`^exported_analysis_history_(\d{8}_\d{6})\.(?:tsv|zip)$`)
-
-// ParseAnalysisExport parses the history visits in an
-// exported_analysis_history_{date}_{time}.tsv file.
-func ParseAnalysisExport(filename string) (*Export, error) {
-	var export Export
-	r, name, err := openExport(filename)
+// OpenAnalysisExport opens an analysis export for reading.
+func OpenAnalysisExport(filename string) (*AnalysisExportReader, error) {
+	r, err := newExportReader(filename, 8)
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
-
-	base := filepath.Base(name)
+	base := filepath.Base(r.filename)
 	matches := analysisExportPattern.FindStringSubmatch(base)
 	if len(matches) != 2 {
 		return nil, fmt.Errorf("historytrends: filename is not an analysis export: %q", base)
 	}
-	t, err := time.Parse("20060102_150405", matches[1])
+	// Export date omits time before v1.5.2.
+	exportTime := matches[1]
+	t, err := time.Parse("20060102_150405"[:len(exportTime)], exportTime)
 	if err != nil {
 		return nil, err
 	}
-	export.Time = t
+	return &AnalysisExportReader{time: t, exportReader: *r}, nil
+}
 
-	cr := csv.NewReader(r)
-	cr.Comma = '\t'
-	cr.FieldsPerRecord = 8
-	cr.LazyQuotes = true
-	var tzOffset int
-	for i := 1; ; i++ {
-		record, err := cr.Read()
+// Time returns the time of export. The timezone is determined upon
+// reading the first record and will be in UTC beforehand.
+func (r *AnalysisExportReader) Time() time.Time { return r.time }
+
+// Close closes the underlying reader.
+func (r *AnalysisExportReader) Close() error { return r.r.Close() }
+
+// ReadAll reads all visits in the export.
+func (r *AnalysisExportReader) ReadAll() (*Export, error) {
+	var visits []Visit
+	for {
+		visit, err := r.Read()
 		if err == io.EOF {
-			break
+			return &Export{r.time, visits}, nil
 		}
 		if err != nil {
 			return nil, err
 		}
-
-		if err := checkURL(record[0], record[1], record[2]); err != nil {
-			return nil, recordErr(i, err)
-		}
-
-		t, offset, err := parseTimes(record[3], record[4], record[5])
-		if err != nil {
-			return nil, recordErr(i, err)
-		}
-		if i == 1 {
-			// Attach timezone offset to export time.
-			d := time.Duration(-offset) * time.Second
-			zone := time.FixedZone("", offset)
-			export.Time = export.Time.Add(d).In(zone)
-			tzOffset = offset
-		} else if offset != tzOffset {
-			// Check that all visits have same timezone offset.
-			return nil, recordErr(i, fmt.Errorf("%s differs from timezone offset %s",
-				time.Duration(offset)*time.Second, time.Duration(tzOffset)*time.Second))
-		}
-
-		transition, err := chrome.ParseTransitionType(record[6])
-		if err != nil {
-			return nil, recordErr(i, err)
-		}
-
-		export.Visits = append(export.Visits, ExportVisit{
-			URL:            record[0],
-			VisitTime:      t,
-			TransitionType: transition,
-			PageTitle:      normalizeTitle(record[7]),
-		})
+		visits = append(visits, *visit)
 	}
-	return &export, nil
 }
 
-func openExport(filename string) (io.ReadCloser, string, error) {
-	switch ext := filepath.Ext(filename); ext {
-	case ".tsv":
-		f, err := os.Open(filename)
-		return f, filename, err
-	case ".zip":
-		return archive.OpenSingleFileZip(filename)
-	default:
-		return nil, "", fmt.Errorf("historytrends: bad file extension: %q", ext)
+// Read reads a single visit in the export.
+func (r *AnalysisExportReader) Read() (*Visit, error) {
+	record, err := r.readRecord()
+	if err != nil {
+		return nil, err
 	}
+
+	if err := checkURL(record[0], record[1], record[2]); err != nil {
+		return nil, r.err(err)
+	}
+
+	t, offset, err := parseTimes(record[3], record[4], record[5])
+	if err != nil {
+		return nil, r.err(err)
+	}
+	if r.record == 1 {
+		// Retrieve timezone offset from first record.
+		d := time.Duration(offset) * time.Second
+		zone := time.FixedZone("", offset)
+		r.time = r.time.Add(-d).In(zone)
+		r.tz = offset
+	} else if offset != r.tz {
+		// Check that all visits have same timezone offset.
+		return nil, r.err(fmt.Errorf("%s differs from timezone offset %s",
+			time.Duration(offset)*time.Second, time.Duration(r.tz)*time.Second))
+	}
+
+	transition, err := chrome.TransitionTypeFromString(record[6])
+	if err != nil {
+		return nil, r.err(err)
+	}
+
+	return &Visit{
+		URL:            record[0],
+		VisitTime:      t,
+		TransitionType: transition,
+		PageTitle:      normalizeTitle(record[7]),
+	}, nil
 }
 
 func parseTimes(timeMsec, timeLocal, weekday string) (time.Time, int, error) {
@@ -204,18 +199,4 @@ func checkURL(rawURL, host, domain string) error {
 		}
 	}
 	return nil
-}
-
-var spacePattern = regexp.MustCompile(`\p{Z}+`)
-
-// normalizeTitle fixes incompletely normalized spaces.
-func normalizeTitle(title string) string {
-	// utils.formatTitle in utils.js replaces /[\t\r\n]/g, then
-	// /\s\s+/g with ' ', which overlooks non-repeated Unicode spaces
-	// (JavaScript \s matches Unicode spaces, unlike Go).
-	return spacePattern.ReplaceAllString(title, " ")
-}
-
-func recordErr(line int, err error) error {
-	return fmt.Errorf("historytrends: record %d: %w", line, err)
 }
