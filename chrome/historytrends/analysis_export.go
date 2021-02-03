@@ -46,17 +46,12 @@ import (
 */
 
 // readAnalysisVisit reads a single visit in an analysis export.
-func (r *ExportReader) readAnalysisVisit() (*Visit, error) {
-	record, err := r.readRecord()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := checkURL(record[0], record[1], record[2]); err != nil {
+func (r *Reader) readAnalysisVisit(rawURL, host, domain, timeMsec, timeLocal, weekday, transition, title string) (*Visit, error) {
+	if err := checkURL(rawURL, host, domain); err != nil {
 		return nil, r.err(err)
 	}
 
-	t, offset, err := parseTimes(record[3], record[4], record[5])
+	t, offset, err := parseTimes(timeMsec, timeLocal, weekday)
 	if err != nil {
 		return nil, r.err(err)
 	}
@@ -74,16 +69,16 @@ func (r *ExportReader) readAnalysisVisit() (*Visit, error) {
 
 	// The page transition string only contains the core type, so
 	// qualifiers are lost.
-	transition, err := chrome.PageTransitionFromString(record[6])
+	typ, err := chrome.PageTransitionFromString(transition)
 	if err != nil {
 		return nil, r.err(err)
 	}
 
 	return &Visit{
-		URL:        record[0],
+		URL:        rawURL,
 		VisitTime:  t,
-		Transition: transition,
-		PageTitle:  normalizeTitle(record[7]),
+		Transition: typ,
+		PageTitle:  normalizeTitle(title),
 	}, nil
 }
 

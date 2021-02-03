@@ -9,6 +9,7 @@
 package historytrends
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/andrewarchi/browser/chrome"
@@ -32,6 +33,7 @@ type Visit struct {
 	PageTitle  string
 }
 
+// ExportType is the format of export.
 type ExportType uint8
 
 // Values for ExportType:
@@ -39,5 +41,15 @@ const (
 	_ ExportType = iota
 	AnalysisExport
 	ArchivedExport
-	IncrementalExport
 )
+
+func (typ ExportType) String() string {
+	switch typ {
+	case AnalysisExport:
+		return "analysis"
+	case ArchivedExport:
+		return "archived"
+	default:
+		return fmt.Sprintf("export(%d)", typ)
+	}
+}

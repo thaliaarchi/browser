@@ -18,11 +18,9 @@ import (
 	"github.com/andrewarchi/browser/archive"
 )
 
-// ExportReader reads a History Trends Unlimited browsing history
-// export.
-type ExportReader struct {
+// Reader reads a History Trends Unlimited browsing history export.
+type Reader struct {
 	cr       *csv.Reader
-	r        io.ReadCloser
 	typ      ExportType
 	filename string    // filename of tsv within zip or bare
 	time     time.Time // export time
@@ -30,71 +28,56 @@ type ExportReader struct {
 	record   int       // index of record
 }
 
-// filenamePattern matches allowed export filenames. More combinations
-// are allowed here than actually exported. An optional suffix like
-// " (1)" is also permitted.
-//
-// As of v1.6, these are the filename formats that have been used:
-//
-// exported_analysis_history_{date:20060102_150405}.tsv (>= v1.5.2)
-// exported_analysis_history_{date:20060102}.tsv (< v1.5.2)
-// exported_analysis_history_{date:20060102}.txt (< v1.4.3)
-//
-// exported_archived_history_{date:20060102}.tsv (>= v1.4.3)
-// exported_archived_history_{date:20060102}.txt (< v1.4.3)
-//
-// history_autobackup_{date:20060102}_{full|incremental}.{tsv|zip} (>= 1.5.2)
-// history_autobackup_{date:20060102}_{full|incremental}.{txt|zip} (>= 1.4.1)
-var filenamePattern = regexp.MustCompile(
-	`^(?:exported_(analysis|archived)_history_(\d{8}(?:_\d{6})?)` +
-		`|(?:history_autobackup_(\d{8}(?:_\d{6})?)_(full|incremental)))` +
-		`(?:[^\d].*)?` + // suffix
-		`\.(?:tsv|txt|zip)$`)
+// ReadCloser reads and closes a History Trends Unlimited browsing
+// history export.
+type ReadCloser struct {
+	Reader
+	rc io.ReadCloser
+}
 
-// OpenExport opens a History Trends Unlimited browsing history export
+// NewReader returns a new Reader that reads from r.
+func NewReader(r io.Reader, exportTime time.Time) *Reader {
+	cr := csv.NewReader(r)
+	cr.Comma = '\t'
+	cr.LazyQuotes = true
+	return &Reader{
+		cr:   cr,
+		typ:  0, // detect on first record
+		time: exportTime,
+	}
+}
+
+// OpenReader opens a History Trends Unlimited browsing history export
 // for reading.
-func OpenExport(filename string) (*ExportReader, error) {
+func OpenReader(filename string) (*ReadCloser, error) {
 	r, name, err := openExport(filename)
 	if err != nil {
 		return nil, err
 	}
 	// Use the filename inside of the zip, when possible, to recover the
 	// original name for renamed files.
-	base := filepath.Base(name)
-	matches := filenamePattern.FindStringSubmatch(base)
-	if len(matches) != 5 {
-		return nil, fmt.Errorf("historytrends: filename is not an export: %q", base)
-	}
-
-	exportTime := matches[2]
-	if exportTime == "" {
-		exportTime = matches[3]
-	}
-	t, err := time.Parse("20060102_150405"[:len(exportTime)], exportTime)
+	typ, exportTime, err := ParseExportFilename(name)
 	if err != nil {
 		return nil, err
 	}
 
-	typ := ArchivedExport
-	fields := 4
-	if matches[1] == "analysis" {
-		typ = AnalysisExport
-		fields = 8
-	} else if matches[4] == "incremental" {
-		typ = ArchivedExport
-	}
-
 	cr := csv.NewReader(r)
 	cr.Comma = '\t'
-	cr.FieldsPerRecord = fields
 	cr.LazyQuotes = true
-	return &ExportReader{
-		cr:       cr,
-		r:        r,
-		typ:      typ,
-		filename: base,
-		time:     t,
-	}, nil
+	cr.FieldsPerRecord = 4
+	if typ == AnalysisExport {
+		cr.FieldsPerRecord = 8
+	}
+	rc := &ReadCloser{
+		Reader: Reader{
+			cr:       cr,
+			typ:      typ,
+			filename: filepath.Base(name),
+			time:     exportTime,
+		},
+		rc: r,
+	}
+	return rc, nil
 }
 
 func openExport(filename string) (io.ReadCloser, string, error) {
@@ -109,30 +92,81 @@ func openExport(filename string) (io.ReadCloser, string, error) {
 	}
 }
 
-func (r *ExportReader) readRecord() ([]string, error) {
-	r.record++
-	return r.cr.Read()
+// filenamePattern matches allowed export filenames. More combinations
+// are allowed here than actually exported. An optional suffix is also
+// permitted.
+//
+// As of v1.6, these are the filename formats that have been used:
+//
+// exported_analysis_history_{date:20060102_150405}.tsv (>= v1.5.2)
+// exported_analysis_history_{date:20060102}.tsv (< v1.5.2)
+// exported_analysis_history_{date:20060102}.txt (< v1.4.3)
+//
+// exported_archived_history_{date:20060102}.tsv (>= v1.4.3)
+// exported_archived_history_{date:20060102}.txt (< v1.4.3)
+//
+// history_autobackup_{date:20060102}_{full|incremental}.{tsv|zip} (>= 1.5.2)
+// history_autobackup_{date:20060102}_{full|incremental}.{txt|zip} (>= 1.4.1)
+var filenamePattern = regexp.MustCompile(
+	`^(?:exported_(analysis|archived)_history_(\d{8}(?:_\d{6})?)` +
+		`|(?:history_autobackup_(\d{8}(?:_\d{6})?)_(?:full|incremental)))` +
+		`(?:[^\d].*)?` + // suffix
+		`\.(?:tsv|txt|zip)$`)
+
+// ParseExportFilename extracts the type and time of export from the
+// given filename. A suffix like "(1)" or "copy", for example, is
+// permitted.
+func ParseExportFilename(filename string) (ExportType, time.Time, error) {
+	base := filepath.Base(filename)
+	matches := filenamePattern.FindStringSubmatch(base)
+	if len(matches) != 4 {
+		return 0, time.Time{}, fmt.Errorf("historytrends: not an export: filename %q does not match pattern", base)
+	}
+
+	exportTime := matches[2]
+	if exportTime == "" {
+		exportTime = matches[3]
+	}
+	t, err := time.Parse("20060102_150405"[:len(exportTime)], exportTime)
+	if err != nil {
+		return 0, time.Time{}, err
+	}
+
+	typ := ArchivedExport
+	if matches[1] == "analysis" {
+		typ = AnalysisExport
+	}
+	return typ, t, nil
 }
 
-// Time returns the time of export. For analysis exports, the timezone
-// is initially UTC, then is determined upon reading the first record.
-// For archived exports, the timezone is always UTC.
-func (r *ExportReader) Time() time.Time { return r.time }
-
-// Close closes the underlying reader.
-func (r *ExportReader) Close() error { return r.r.Close() }
+func (r *Reader) Read() (*Visit, error) {
+	r.record++
+	record, err := r.cr.Read()
+	if err != nil {
+		return nil, err
+	}
+	if r.typ == 0 { // infer export type
+		switch len(record) {
+		case 8:
+			r.typ = AnalysisExport
+		case 4:
+			r.typ = ArchivedExport
+		default:
+			return nil, fmt.Errorf("historytrends: not an export: %w", csv.ErrFieldCount)
+		}
+	}
+	if r.typ == AnalysisExport {
+		return r.readAnalysisVisit(record[0], record[1], record[2], record[3],
+			record[4], record[5], record[6], record[7])
+	}
+	return r.readArchivedVisit(record[0], record[1], record[2], record[3])
+}
 
 // ReadAll reads all visits in the export.
-func (r *ExportReader) ReadAll() (*Export, error) {
+func (r *Reader) ReadAll() (*Export, error) {
 	var visits []Visit
 	for {
-		var visit *Visit
-		var err error
-		if r.typ == AnalysisExport {
-			visit, err = r.readAnalysisVisit()
-		} else {
-			visit, err = r.readArchivedVisit()
-		}
+		visit, err := r.Read()
 		if err == io.EOF {
 			return &Export{r.filename, r.typ, r.time, visits}, nil
 		}
@@ -143,7 +177,15 @@ func (r *ExportReader) ReadAll() (*Export, error) {
 	}
 }
 
-func (r *ExportReader) err(err error) error {
+// Time returns the time of export. For analysis exports, the timezone
+// is initially UTC, then is determined upon reading the first record.
+// For archived exports, the timezone is always UTC.
+func (r *Reader) Time() time.Time { return r.time }
+
+// Close closes the underlying reader.
+func (r *ReadCloser) Close() error { return r.rc.Close() }
+
+func (r *Reader) err(err error) error {
 	return fmt.Errorf("historytrends: record %d: %w", r.record, err)
 }
 

@@ -31,24 +31,20 @@ import (
 */
 
 // readArchivedVisit reads a single visit in an archived export.
-func (r *ExportReader) readArchivedVisit() (*Visit, error) {
-	record, err := r.readRecord()
+func (r *Reader) readArchivedVisit(rawURL, timeMsec, transition, title string) (*Visit, error) {
+	t, err := parseEpochTime(timeMsec)
 	if err != nil {
 		return nil, err
 	}
-	t, err := parseEpochTime(record[1])
-	if err != nil {
-		return nil, err
-	}
-	transition, err := strconv.ParseUint(record[2], 10, 32)
+	typ, err := strconv.ParseUint(transition, 10, 32)
 	if err != nil {
 		return nil, err
 	}
 	return &Visit{
-		URL:        record[0],
+		URL:        rawURL,
 		VisitTime:  t,
-		Transition: chrome.PageTransition(transition),
-		PageTitle:  normalizeTitle(record[3]),
+		Transition: chrome.PageTransition(typ),
+		PageTitle:  normalizeTitle(title),
 	}, nil
 }
 

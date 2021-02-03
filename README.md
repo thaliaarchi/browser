@@ -7,20 +7,26 @@ browsers.
 
 ## Browsers
 
+Key:
+
+- R: format can be read
+- W: format can be written
+- D: format documentation and/or source has been consulted
+
 ### Firefox
 
 Firefox files currently parsed:
 
-- `Profiles/{profile}/addons.json`
-- `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.{json|jsonlz4}`
-- `Profiles/{profile}/containers.json`
-- `Profiles/{profile}/extension-preferences.json`
-- `Profiles/{profile}/extension-settings.json`
-- `Profiles/{profile}/extensions.json`
-- `Profiles/{profile}/handlers.json`
-- `Profiles/{profile}/times.json`
-- `installs.ini`
-- `profiles.ini`
+- `Profiles/{profile}/addons.json` (R)
+- `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.{json|jsonlz4}` (R)
+- `Profiles/{profile}/containers.json` (R)
+- `Profiles/{profile}/extension-preferences.json` (R)
+- `Profiles/{profile}/extension-settings.json` (R)
+- `Profiles/{profile}/extensions.json` (R)
+- `Profiles/{profile}/handlers.json` (R)
+- `Profiles/{profile}/times.json` (R)
+- `installs.ini` (R)
+- `profiles.ini` (R)
 
 #### Tor Browser
 
@@ -30,25 +36,25 @@ No Tor Browser-specific data is currently parsed.
 
 Chrome files currently parsed:
 
-- `{profile}/Bookmarks`
-- `First Run`
+- `{profile}/Bookmarks` (R)
+- `First Run` (R)
 
 Google Takeout files currently parsed:
 
-- `Takeout/Chrome/Autofill.json`
-- `Takeout/Chrome/Bookmarks.html`
-- `Takeout/Chrome/BrowserHistory.json`
-- `Takeout/Chrome/Extensions.json`
-- `Takeout/Chrome/SearchEngines.json`
-- `Takeout/Chrome/SyncSettings.json`
+- `Takeout/Chrome/Autofill.json` (R)
+- `Takeout/Chrome/Bookmarks.html` (R)
+- `Takeout/Chrome/BrowserHistory.json` (R)
+- `Takeout/Chrome/Extensions.json` (R)
+- `Takeout/Chrome/SearchEngines.json` (R)
+- `Takeout/Chrome/SyncSettings.json` (R)
 
 #### History Trends Unlimited (extension)
 
-History Trends Unlimited files currently parsed:
+All History Trends Unlimited formats are parsed:
 
-- `exported_analysis_history_{date}.{tsv|txt}`
-- `exported_archived_history_{date}.{tsv|txt}`
-- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}`
+- `exported_analysis_history_{date}.{tsv|txt}` (RD)
+- `exported_archived_history_{date}.{tsv|txt}` (RD)
+- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}` (RD)
 
 #### Brave
 
