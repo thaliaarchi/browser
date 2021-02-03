@@ -7,9 +7,6 @@
 package historytrends
 
 import (
-	"fmt"
-	"io"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -17,62 +14,24 @@ import (
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
 )
 
-// ArchivedExportReader reads the browsing history visits in an
-// exported_archived_history_{date}.{tsv|txt} or
-// history_autobackup_{date}_{full|incremental}.{tsv|txt|zip} file.
-type ArchivedExportReader struct {
-	time time.Time // export time
-	exportReader
-}
+/*
+	Archived Export ("Transfer History" / "Auto Backup")
 
-var archivedExportPattern = regexp.MustCompile(
-	`^(?:exported_archived_history_(\d{8})` +
-		`|(?:history_autobackup_(\d{8})_(?:full|incremental)))\.(?:tsv|txt|zip)$`)
+	An archived export is a tab-delimited file with the fields listed
+	below. It is created by using the "Transfer History" or "Auto Backup"
+	features on the Options page.
 
-// OpenArchivedExport opens an archived export for reading.
-func OpenArchivedExport(filename string) (*ArchivedExportReader, error) {
-	r, err := newExportReader(filename, 4)
-	if err != nil {
-		return nil, err
-	}
-	matches := archivedExportPattern.FindStringSubmatch(r.filename)
-	if len(matches) != 3 {
-		return nil, fmt.Errorf("historytrends: filename is not an archived export: %q", r.filename)
-	}
-	exportTime := matches[1]
-	if exportTime == "" {
-		exportTime = matches[2]
-	}
-	t, err := time.Parse("20060102", exportTime)
-	if err != nil {
-		return nil, err
-	}
-	return &ArchivedExportReader{time: t, exportReader: *r}, nil
-}
+	0: URL              visited URL
+	1: Visit Time       visit time in milliseconds            i.e. U1384634958041.754 (Unix epoch: 1970-01-01)
+	2: Transition Type  how the browser navigated to the URL  i.e. 1
+	3: Page Title*      page title of the visited URL
+	* column can be blank
 
-// Time returns the time of export in UTC.
-func (r *ArchivedExportReader) Time() time.Time { return r.time }
+	Format docs: chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
+*/
 
-// Close closes the underlying reader.
-func (r *ArchivedExportReader) Close() error { return r.r.Close() }
-
-// ReadAll reads all visits in the export.
-func (r *ArchivedExportReader) ReadAll() (*Export, error) {
-	var visits []Visit
-	for {
-		visit, err := r.Read()
-		if err == io.EOF {
-			return &Export{r.time, visits}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-		visits = append(visits, *visit)
-	}
-}
-
-// Read reads a single visit in the export.
-func (r *ArchivedExportReader) Read() (*Visit, error) {
+// readArchivedVisit reads a single visit in an archived export.
+func (r *ExportReader) readArchivedVisit() (*Visit, error) {
 	record, err := r.readRecord()
 	if err != nil {
 		return nil, err
@@ -93,12 +52,14 @@ func (r *ArchivedExportReader) Read() (*Visit, error) {
 	}, nil
 }
 
+// parseEpochTime parses a fractional millisecond timestamp relative to
+// the Unix or Windows epoch.
 func parseEpochTime(msec string) (time.Time, error) {
 	if msec == "" {
 		return time.Time{}, nil
 	}
 	epoch := timefmt.Windows
-	if msec[0] == 'U' {
+	if msec[0] == 'U' { // >= v1.4.1
 		epoch = timefmt.Unix
 		msec = msec[1:]
 	}

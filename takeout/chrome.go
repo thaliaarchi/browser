@@ -15,6 +15,7 @@ import (
 
 	"github.com/andrewarchi/browser/archive"
 	"github.com/andrewarchi/browser/bookmark"
+	"github.com/andrewarchi/browser/chrome"
 	"github.com/andrewarchi/browser/jsonutil"
 	"github.com/andrewarchi/browser/jsonutil/timefmt"
 	"github.com/andrewarchi/browser/jsonutil/uuid"
@@ -28,7 +29,7 @@ type Chrome struct {
 	// Bookmarks.html
 	Bookmarks []bookmark.BookmarkEntry
 	// BrowserHistory.json
-	BrowserHistory []BrowserHistory `json:"Browser History"`
+	BrowserHistory []Visit `json:"Browser History"`
 	// Dictionary.csv - TODO unknown structure
 	// Extensions.json
 	Extensions        []Extension        `json:"Extensions"`
@@ -69,28 +70,14 @@ type AutofillProfile struct {
 	UseDate                       timefmt.UnixSec `json:"use_date"`
 }
 
-type BrowserHistory struct {
-	FaviconURL     string            `json:"favicon_url,omitempty"`
-	PageTransition PageTransition    `json:"page_transition"`
-	Title          string            `json:"title"`
-	URL            string            `json:"url"`
-	ClientID       jsonutil.Base64   `json:"client_id"`
-	Time           timefmt.UnixMicro `json:"time_usec"`
+type Visit struct {
+	FaviconURL     string                `json:"favicon_url,omitempty"`
+	PageTransition chrome.PageTransition `json:"page_transition"`
+	Title          string                `json:"title"`
+	URL            string                `json:"url"`
+	ClientID       jsonutil.Base64       `json:"client_id"`
+	Time           timefmt.UnixMicro     `json:"time_usec"`
 }
-
-type PageTransition string
-
-// Known values for page_transition.
-const (
-	TransitionAutoBookmark PageTransition = "AUTO_BOOKMARK"
-	TransitionAutoToplevel PageTransition = "AUTO_TOPLEVEL"
-	TransitionFormSubmit   PageTransition = "FORM_SUBMIT"
-	TransitionGenerated    PageTransition = "GENERATED"
-	TransitionKeyword      PageTransition = "KEYWORD"
-	TransitionLink         PageTransition = "LINK"
-	TransitionReload       PageTransition = "RELOAD"
-	TransitionTyped        PageTransition = "TYPED"
-)
 
 type Extension struct {
 	IncognitoEnabled     bool   `json:"incognito_enabled"`

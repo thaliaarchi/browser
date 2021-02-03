@@ -12,8 +12,7 @@ browsers.
 Firefox files currently parsed:
 
 - `Profiles/{profile}/addons.json`
-- `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.json`
-- `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.jsonlz4`
+- `Profiles/{profile}/bookmarkbackups/bookmarks-{date}_{count}_{hash}.{json|jsonlz4}`
 - `Profiles/{profile}/containers.json`
 - `Profiles/{profile}/extension-preferences.json`
 - `Profiles/{profile}/extension-settings.json`
@@ -47,8 +46,9 @@ Google Takeout files currently parsed:
 
 History Trends Unlimited files currently parsed:
 
-- `exported_analysis_history_{date}.tsv`
-- `exported_analysis_history_{date}.txt`
+- `exported_analysis_history_{date}.{tsv|txt}`
+- `exported_archived_history_{date}.{tsv|txt}`
+- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}`
 
 #### Brave
 

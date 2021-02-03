@@ -8,9 +8,7 @@ package historytrends
 
 import (
 	"fmt"
-	"io"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +33,7 @@ import (
 	5: Day of Week          day of the week for the visit time           0 for Sunday
 	6: Transition Type      how the browser navigated to the URL         i.e. link
 	7: Page Title*          page title of visited URL
-	* optional
+	* column can be blank
 
 	Several fields are redundant: host and domain are derived from the
 	URL; visit time (string) and day of week are less precise than visit
@@ -44,67 +42,11 @@ import (
 	The string-formatted visit time is in local time, at the time of the
 	export, so the timezone of the export is known.
 
-	Filename:
-	exported_analysis_history_{date:20060102_150405}.tsv (>= v1.5.2)
-	exported_analysis_history_{date:20060102}.tsv (< v1.5.2)
-	exported_analysis_history_{date:20060102}.txt (< v1.4.3)
-
 	Format docs: chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/export_details.html
 */
 
-// AnalysisExportReader reads the browsing history visits in an
-// exported_analysis_history_{date}.{tsv|txt} file.
-type AnalysisExportReader struct {
-	time time.Time // export time
-	tz   int       // timezone offset in seconds
-	exportReader
-}
-
-var analysisExportPattern = regexp.MustCompile(`^exported_analysis_history_(\d{8}(?:_\d{6})?)\.(?:tsv|txt|zip)$`)
-
-// OpenAnalysisExport opens an analysis export for reading.
-func OpenAnalysisExport(filename string) (*AnalysisExportReader, error) {
-	r, err := newExportReader(filename, 8)
-	if err != nil {
-		return nil, err
-	}
-	matches := analysisExportPattern.FindStringSubmatch(r.filename)
-	if len(matches) != 2 {
-		return nil, fmt.Errorf("historytrends: filename is not an analysis export: %q", r.filename)
-	}
-	// Export date omits time before v1.5.2.
-	exportTime := matches[1]
-	t, err := time.Parse("20060102_150405"[:len(exportTime)], exportTime)
-	if err != nil {
-		return nil, err
-	}
-	return &AnalysisExportReader{time: t, exportReader: *r}, nil
-}
-
-// Time returns the time of export. The timezone is determined upon
-// reading the first record and will be in UTC beforehand.
-func (r *AnalysisExportReader) Time() time.Time { return r.time }
-
-// Close closes the underlying reader.
-func (r *AnalysisExportReader) Close() error { return r.r.Close() }
-
-// ReadAll reads all visits in the export.
-func (r *AnalysisExportReader) ReadAll() (*Export, error) {
-	var visits []Visit
-	for {
-		visit, err := r.Read()
-		if err == io.EOF {
-			return &Export{r.time, visits}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-		visits = append(visits, *visit)
-	}
-}
-
-// Read reads a single visit in the export.
-func (r *AnalysisExportReader) Read() (*Visit, error) {
+// readAnalysisVisit reads a single visit in an analysis export.
+func (r *ExportReader) readAnalysisVisit() (*Visit, error) {
 	record, err := r.readRecord()
 	if err != nil {
 		return nil, err
