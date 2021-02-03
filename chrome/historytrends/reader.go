@@ -139,6 +139,7 @@ func ParseExportFilename(filename string) (ExportType, time.Time, error) {
 	return typ, t, nil
 }
 
+// Read reads a single visit in an export.
 func (r *Reader) Read() (*Visit, error) {
 	r.record++
 	record, err := r.cr.Read()
@@ -162,7 +163,7 @@ func (r *Reader) Read() (*Visit, error) {
 	return r.readArchivedVisit(record[0], record[1], record[2], record[3])
 }
 
-// ReadAll reads all visits in the export.
+// ReadAll reads all visits in an export.
 func (r *Reader) ReadAll() (*Export, error) {
 	var visits []Visit
 	for {

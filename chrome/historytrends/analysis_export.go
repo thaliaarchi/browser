@@ -30,7 +30,7 @@ import (
 	2: Domain*              public suffix of visited URL
 	3: Visit Time (ms)      visit time in milliseconds since 1970-01-01  i.e. 1384634958041.754
 	4: Visit Time (string)  visit time in local time                     i.e. 2013-11-16 14:49:18.041
-	5: Day of Week          day of the week for the visit time           0 for Sunday
+	5: Day of Week          local day of the week for the visit time     0 for Sunday
 	6: Transition Type      how the browser navigated to the URL         i.e. link
 	7: Page Title*          page title of visited URL
 	* column can be blank
@@ -136,4 +136,28 @@ func checkURL(rawURL, host, domain string) error {
 		}
 	}
 	return nil
+}
+
+// writeAnalysisVisit writes a single visit in an analysis export.
+func (w *Writer) writeAnalysisVisit(v *Visit) ([]string, error) {
+	u, err := url.Parse(v.URL)
+	if err != nil {
+		return nil, err
+	}
+	host := u.Hostname()
+	tld1, err := publicsuffix.EffectiveTLDPlusOne(host)
+	if err != nil {
+		return nil, err
+	}
+	local := v.VisitTime.In(w.loc)
+	return []string{
+		v.URL,
+		host,
+		tld1,
+		timefmt.Format(v.VisitTime, timefmt.Milli, timefmt.Unix),
+		local.Format("2006-01-02 15:04:05.000"),
+		strconv.Itoa(int(local.Weekday())),
+		v.Transition.String(),
+		v.PageTitle,
+	}, nil
 }

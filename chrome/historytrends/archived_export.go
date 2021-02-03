@@ -22,7 +22,7 @@ import (
 	features on the Options page.
 
 	0: URL              visited URL
-	1: Visit Time       visit time in milliseconds            i.e. U1384634958041.754 (Unix epoch: 1970-01-01)
+	1: Visit Time       visit time in milliseconds in UTC     i.e. U1384634958041.754 (Unix epoch: 1970-01-01)
 	2: Transition Type  how the browser navigated to the URL  i.e. 1
 	3: Page Title*      page title of the visited URL
 	* column can be blank
@@ -60,4 +60,14 @@ func parseEpochTime(msec string) (time.Time, error) {
 		msec = msec[1:]
 	}
 	return timefmt.Parse(msec, timefmt.Milli, epoch)
+}
+
+// writeArchivedVisit writes a single visit in an archived export.
+func (w *Writer) writeArchivedVisit(v *Visit) []string {
+	return []string{
+		v.URL,
+		"U" + timefmt.Format(v.VisitTime, timefmt.Milli, timefmt.Unix),
+		strconv.Itoa(int(v.Transition)),
+		v.PageTitle,
+	}
 }
