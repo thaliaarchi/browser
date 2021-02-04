@@ -48,14 +48,6 @@ Google Takeout files currently parsed:
 - `Takeout/Chrome/SearchEngines.json` (R)
 - `Takeout/Chrome/SyncSettings.json` (R)
 
-#### History Trends Unlimited (extension)
-
-All History Trends Unlimited formats are parsed:
-
-- `exported_analysis_history_{date}.{tsv|txt}` (RWD)
-- `exported_archived_history_{date}.{tsv|txt}` (RWD)
-- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}` (RWD)
-
 #### Brave
 
 No Brave-specific data is currently parsed.
@@ -63,6 +55,18 @@ No Brave-specific data is currently parsed.
 #### Edge (Chromium)
 
 No Edge-specific data is currently parsed.
+
+### Chrome Extensions
+
+#### History Trends Unlimited
+
+- `exported_analysis_history_{date}.{tsv|txt}` (RWD)
+- `exported_archived_history_{date}.{tsv|txt}` (RWD)
+- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}` (RWD)
+
+#### TabCloud
+
+- `https://chrometabcloud.appspot.com/tabcloud` (R)
 
 ## Contributing
 
