@@ -16,16 +16,19 @@ import (
 )
 
 // Export contains browsing history exported from History Trends
-// Unlimited.
+// Unlimited. The export time is in the local timezone at the time the
+// export was created. When the local timezone cannot be determined, the
+// location is incorrectly set to UTC.
 type Export struct {
-	Filename string
-	Type     ExportType
-	Time     time.Time // time of export (analysis: local, exported: UTC)
-	Visits   []Visit
+	Filename   string // filename of tsv within zip or as given
+	Type       ExportType
+	ExportTime time.Time
+	Visits     []Visit
 }
 
 // Visit is a page visit in browsing history. URL and visit time
 // combined are unique; no two visits have the same URL and visit time.
+// The visit time is in UTC, not local time.
 type Visit struct {
 	URL        string
 	VisitTime  time.Time // UTC

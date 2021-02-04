@@ -22,7 +22,7 @@ import (
 	features on the Options page.
 
 	0: URL              visited URL
-	1: Visit Time       visit time in milliseconds in UTC     i.e. U1384634958041.754 (Unix epoch: 1970-01-01)
+	1: Visit Time       visit time in UTC                     i.e. U1384634958041.754 (Unix milliseconds), 13149893660345543 (Windows microseconds)
 	2: Transition Type  how the browser navigated to the URL  i.e. 1
 	3: Page Title*      page title of the visited URL
 	* column can be blank
@@ -36,7 +36,7 @@ func (r *Reader) readArchivedVisit(rawURL, timeMsec, transition, title string) (
 	if err != nil {
 		return nil, err
 	}
-	typ, err := strconv.ParseUint(transition, 10, 32)
+	typ, err := strconv.ParseInt(transition, 10, 32)
 	if err != nil {
 		return nil, err
 	}
@@ -50,16 +50,14 @@ func (r *Reader) readArchivedVisit(rawURL, timeMsec, transition, title string) (
 
 // parseEpochTime parses a fractional millisecond timestamp relative to
 // the Unix or Windows epoch.
-func parseEpochTime(msec string) (time.Time, error) {
-	if msec == "" {
+func parseEpochTime(t string) (time.Time, error) {
+	if t == "" {
 		return time.Time{}, nil
 	}
-	epoch := timefmt.Windows
-	if msec[0] == 'U' { // >= v1.4.1
-		epoch = timefmt.Unix
-		msec = msec[1:]
+	if t[0] == 'U' { // >= v1.4.1
+		return timefmt.Parse(t[1:], timefmt.Milli, timefmt.Unix)
 	}
-	return timefmt.Parse(msec, timefmt.Milli, epoch)
+	return timefmt.Parse(t, timefmt.Micro, timefmt.Windows)
 }
 
 // writeArchivedVisit writes a single visit in an archived export.

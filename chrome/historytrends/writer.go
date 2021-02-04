@@ -59,7 +59,7 @@ func (w *Writer) WriteAll(visits []Visit) error {
 
 // Write writes the export to w.
 func (ex *Export) Write(w io.Writer) error {
-	ew, err := NewWriter(w, ex.Type, ex.Time)
+	ew, err := NewWriter(w, ex.Type, ex.ExportTime)
 	if err != nil {
 		return err
 	}

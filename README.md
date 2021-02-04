@@ -52,9 +52,9 @@ Google Takeout files currently parsed:
 
 All History Trends Unlimited formats are parsed:
 
-- `exported_analysis_history_{date}.{tsv|txt}` (RD)
-- `exported_archived_history_{date}.{tsv|txt}` (RD)
-- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}` (RD)
+- `exported_analysis_history_{date}.{tsv|txt}` (RWD)
+- `exported_archived_history_{date}.{tsv|txt}` (RWD)
+- `history_autobackup_{date}_{full|incremental}.{tsv|txt|zip}` (RWD)
 
 #### Brave
 

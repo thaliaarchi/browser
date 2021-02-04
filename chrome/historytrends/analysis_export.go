@@ -48,12 +48,12 @@ import (
 // readAnalysisVisit reads a single visit in an analysis export.
 func (r *Reader) readAnalysisVisit(rawURL, host, domain, timeMsec, timeLocal, weekday, transition, title string) (*Visit, error) {
 	if err := checkURL(rawURL, host, domain); err != nil {
-		return nil, r.err(err)
+		return nil, err
 	}
 
 	t, offset, err := parseTimes(timeMsec, timeLocal, weekday)
 	if err != nil {
-		return nil, r.err(err)
+		return nil, err
 	}
 	if r.record == 1 {
 		// Retrieve timezone offset from first record.
@@ -63,15 +63,15 @@ func (r *Reader) readAnalysisVisit(rawURL, host, domain, timeMsec, timeLocal, we
 		r.tz = offset
 	} else if offset != r.tz {
 		// Check that all visits have same timezone offset.
-		return nil, r.err(fmt.Errorf("%s differs from timezone offset %s",
-			time.Duration(offset)*time.Second, time.Duration(r.tz)*time.Second))
+		return nil, fmt.Errorf("%s differs from timezone offset %s",
+			time.Duration(offset)*time.Second, time.Duration(r.tz)*time.Second)
 	}
 
 	// The page transition string only contains the core type, so
 	// qualifiers are lost.
 	typ, err := chrome.PageTransitionFromString(transition)
 	if err != nil {
-		return nil, r.err(err)
+		return nil, err
 	}
 
 	return &Visit{
