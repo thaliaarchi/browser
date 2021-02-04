@@ -142,7 +142,7 @@ func (r *Reader) Read() (*Visit, error) {
 		return nil, err
 	}
 	if err != nil {
-		return nil, fmt.Errorf("historytrends: record %d: %w", r.record, err)
+		return nil, fmt.Errorf("historytrends: reading record %d: %w", r.record, err)
 	}
 	return v, nil
 }
@@ -198,7 +198,7 @@ func (r *Reader) ReadAll() (*Export, error) {
 // record. For archived exports, the timezone is always UTC.
 func (r *Reader) ExportTime() time.Time { return r.time }
 
-// Close closes the underlying reader.
+// Close closes the underlying io.ReadCloser.
 func (r *ReadCloser) Close() error { return r.rc.Close() }
 
 var spacePattern = regexp.MustCompile(`\p{Z}+`)

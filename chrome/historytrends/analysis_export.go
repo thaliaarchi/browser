@@ -145,9 +145,12 @@ func (w *Writer) writeAnalysisVisit(v *Visit) ([]string, error) {
 		return nil, err
 	}
 	host := u.Hostname()
-	tld1, err := publicsuffix.EffectiveTLDPlusOne(host)
-	if err != nil {
-		return nil, err
+	var tld1 string
+	if strings.IndexByte(host, '.') != -1 {
+		tld1, err = publicsuffix.EffectiveTLDPlusOne(host)
+		if err != nil {
+			return nil, err
+		}
 	}
 	local := v.VisitTime.In(w.loc)
 	return []string{
