@@ -8,9 +8,11 @@
 package jsonutil
 
 import (
+	"encoding"
 	"encoding/json"
 	"io"
 	"os"
+	"strconv"
 )
 
 // Decode decodes the result into data, requiring fields to match
@@ -30,4 +32,17 @@ func DecodeFile(filename string, data interface{}) error {
 	}
 	defer f.Close()
 	return Decode(f, data)
+}
+
+// QuotedUnmarshal removes quotes then unmarshals the data. Escape
+// sequences are not checked.
+func QuotedUnmarshal(data []byte, v encoding.TextUnmarshaler) error {
+	if string(data) == "null" {
+		return nil
+	}
+	q, err := strconv.Unquote(string(data))
+	if err != nil {
+		return err
+	}
+	return v.UnmarshalText([]byte(q))
 }

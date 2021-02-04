@@ -10,6 +10,7 @@ package archive
 import (
 	"archive/tar"
 	"archive/zip"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -18,6 +19,7 @@ import (
 	"path/filepath"
 
 	"github.com/pierrec/lz4/v4"
+	"github.com/ulikunitz/xz"
 )
 
 // File exposes a common interface for files in an archive.
@@ -32,20 +34,52 @@ type File interface {
 type WalkFunc func(File) error
 
 // Walk traverses an archive and executes the given walk function on
-// each file.
+// each file. Supported archive and compression formats: ZIP, tar, gzip,
+// XZ, and LZ4.
 func Walk(filename string, walk WalkFunc) error {
-	switch ext := Ext(filename); ext {
-	case ".zip":
-		return WalkZip(filename, walk)
-	case ".tar":
-		return WalkTar(filename, walk)
-	case ".tar.gz", ".tgz":
-		return WalkTarGz(filename, walk)
-	case ".tar.lz4":
-		return WalkTarLZ4(filename, walk)
-	default:
-		return fmt.Errorf("archive: unsupported extension: %q", ext)
+	exts, err := splitExt(filepath.Base(filename))
+	if err != nil {
+		return err
 	}
+	if len(exts) == 1 && exts[0] == "zip" {
+		return WalkZipFile(filename, walk)
+	}
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	r := io.Reader(f)
+	for _, ext := range exts {
+		switch ext {
+		case "zip":
+			b, err := ioutil.ReadAll(r)
+			if err != nil {
+				return err
+			}
+			return WalkZip(bytes.NewReader(b), int64(len(b)), filename, walk)
+		case "tar":
+			return WalkTar(r, filename, walk)
+		case "gz":
+			gr, err := gzip.NewReader(r)
+			if err != nil {
+				return err
+			}
+			defer gr.Close()
+			r = gr
+		case "xz":
+			xr, err := xz.NewReader(r)
+			if err != nil {
+				return err
+			}
+			r = xr
+		case "lz4":
+			r = lz4.NewReader(r)
+		default:
+			return fmt.Errorf("archive: unsupported extension: %q", ext)
+		}
+	}
+	return fmt.Errorf("archive: no archive extension: %s", filename)
 }
 
 type zipFile struct {
@@ -56,20 +90,34 @@ func (zf zipFile) Name() string                 { return zf.f.Name }
 func (zf zipFile) Open() (io.ReadCloser, error) { return zf.f.Open() }
 func (zf zipFile) FileInfo() os.FileInfo        { return zf.f.FileInfo() }
 
-// WalkZip traverses a ZIP archive and executes the given walk function
-// on each file.
-func WalkZip(filename string, walk WalkFunc) error {
-	zr, err := zip.OpenReader(filename)
-	if err != nil {
-		return err
-	}
-	defer zr.Close()
+func walkZip(zr *zip.Reader, filename string, walk WalkFunc) error {
 	for _, f := range zr.File {
 		if err := walk(zipFile{f}); err != nil {
 			return fmt.Errorf("archive: walk %s:%s: %w", filename, f.Name, err)
 		}
 	}
 	return nil
+}
+
+// WalkZipFile traverses a ZIP archive from a file and executes the
+// given walk function on each file.
+func WalkZipFile(filename string, walk WalkFunc) error {
+	zr, err := zip.OpenReader(filename)
+	if err != nil {
+		return err
+	}
+	defer zr.Close()
+	return walkZip(&zr.Reader, filename, walk)
+}
+
+// WalkZip traverses a ZIP archive from an io.ReaderAt and executes the
+// given walk function on each file.
+func WalkZip(r io.ReaderAt, size int64, filename string, walk WalkFunc) error {
+	zr, err := zip.NewReader(r, size)
+	if err != nil {
+		return err
+	}
+	return walkZip(zr, filename, walk)
 }
 
 type tarFile struct {
@@ -81,46 +129,9 @@ func (tf tarFile) Name() string                 { return tf.h.Name }
 func (tf tarFile) Open() (io.ReadCloser, error) { return ioutil.NopCloser(tf.r), nil }
 func (tf tarFile) FileInfo() os.FileInfo        { return tf.h.FileInfo() }
 
-// WalkTar traverses a tar archive and executes the given walk function
-// on each file.
-func WalkTar(filename string, walk WalkFunc) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	return walkTar(f, filename, walk)
-}
-
-// WalkTarGz traverses a gzip-compressed tar archive and executes the
+// WalkTar traverses a tar archive from an io.Reader and executes the
 // given walk function on each file.
-func WalkTarGz(filename string, walk WalkFunc) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	gr, err := gzip.NewReader(f)
-	if err != nil {
-		return err
-	}
-	defer gr.Close()
-	return walkTar(gr, filename, walk)
-}
-
-// WalkTarLZ4 traverses an LZ4 compressed tar archive and executes the
-// given walk function on each file.
-func WalkTarLZ4(filename string, walk WalkFunc) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	lr := lz4.NewReader(f)
-	return walkTar(lr, filename, walk)
-}
-
-func walkTar(r io.Reader, filename string, walk WalkFunc) error {
+func WalkTar(r io.Reader, filename string, walk WalkFunc) error {
 	tr := tar.NewReader(r)
 	for {
 		header, err := tr.Next()
@@ -140,13 +151,33 @@ func walkTar(r io.Reader, filename string, walk WalkFunc) error {
 	return nil
 }
 
-// Ext returns the extension of the filename. For .gz and .lz4 two-level
-// extensions, the full extension is returned like .tar.gz.
-func Ext(filename string) string {
-	ext := filepath.Ext(filename)
-	if ext == ".gz" || ext == ".lz4" {
-		ext2 := filepath.Ext(filename[:len(filename)-len(ext)])
-		return filename[len(filename)-len(ext)-len(ext2):] // avoid concat
+// WalkTarFile traverses a tar archive from a file and executes the
+// given walk function on each file.
+func WalkTarFile(filename string, walk WalkFunc) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
 	}
-	return ext
+	return WalkTar(f, filename, walk)
+}
+
+// splitExt splits the filename into recognized extensions.
+func splitExt(filename string) ([]string, error) {
+	name := filename
+	var exts []string
+	for {
+		switch ext := filepath.Ext(name); ext {
+		case ".zip", ".tar":
+			return append(exts, ext[1:]), nil
+		case ".tgz", ".txz":
+			return append(exts, ext[2:], "tar"), nil
+		case ".gz", ".xz", ".lz4":
+			exts = append(exts, ext[1:])
+			name = name[:len(name)-len(ext)]
+		case "":
+			return nil, fmt.Errorf("archive: no archive extension: %q", filename)
+		default:
+			return nil, fmt.Errorf("archive: unrecognized extension %q: %q", ext, filename)
+		}
+	}
 }

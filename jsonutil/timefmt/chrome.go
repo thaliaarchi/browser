@@ -55,5 +55,5 @@ func (t *QuotedChrome) UnmarshalText(data []byte) error {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *QuotedChrome) UnmarshalJSON(data []byte) error {
-	return jsonutil.QuotedUnmarshal(data, t.UnmarshalText)
+	return jsonutil.QuotedUnmarshal(data, t)
 }

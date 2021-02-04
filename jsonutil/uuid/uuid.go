@@ -114,7 +114,7 @@ func (uuid *UUID) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (uuid *UUID) UnmarshalJSON(data []byte) error {
-	return jsonutil.QuotedUnmarshal(data, uuid.UnmarshalText)
+	return jsonutil.QuotedUnmarshal(data, uuid)
 }
 
 func (uuid *UUID) String() string {

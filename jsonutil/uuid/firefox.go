@@ -59,7 +59,7 @@ func (id Firefox) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (id *Firefox) UnmarshalJSON(data []byte) error {
-	return jsonutil.QuotedUnmarshal(data, id.UnmarshalText)
+	return jsonutil.QuotedUnmarshal(data, id)
 }
 
 func (id Firefox) String() string {

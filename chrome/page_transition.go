@@ -8,7 +8,10 @@ package chrome
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/andrewarchi/browser/jsonutil"
 )
 
 // Page transition types documentation:
@@ -51,6 +54,31 @@ const (
 	TransitionIsRedirectMask PageTransition = 0xC0000000
 	TransitionQualifierMask  PageTransition = 0xFFFFFF00
 )
+
+// MarshalText implements the encoding.TextMarshaler i
+func (typ PageTransition) MarshalText() ([]byte, error) {
+	return []byte(typ.String()), nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler
+func (typ *PageTransition) UnmarshalText(data []byte) error {
+	t, err := PageTransitionFromString(string(data))
+	if err != nil {
+		return err
+	}
+	*typ = t
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (typ PageTransition) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote(typ.String())), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (typ *PageTransition) UnmarshalJSON(data []byte) error {
+	return jsonutil.QuotedUnmarshal(data, typ)
+}
 
 // PageTransitionFromString returns the page transition core value
 // corresponding to the string.

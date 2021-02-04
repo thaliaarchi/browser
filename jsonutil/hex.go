@@ -44,7 +44,7 @@ func (h Hex) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (h *Hex) UnmarshalJSON(data []byte) error {
-	return QuotedUnmarshal(data, h.UnmarshalText)
+	return QuotedUnmarshal(data, h)
 }
 
 func (h Hex) String() string {
