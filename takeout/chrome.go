@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/andrewarchi/browser/archive"
+	"github.com/andrewarchi/archive"
 	"github.com/andrewarchi/browser/bookmark"
 	"github.com/andrewarchi/browser/chrome"
 	"github.com/andrewarchi/browser/jsonutil"

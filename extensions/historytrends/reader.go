@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/andrewarchi/browser/archive"
+	"github.com/andrewarchi/archive"
 )
 
 // Reader reads a History Trends Unlimited browsing history export.

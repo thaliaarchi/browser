@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/andrewarchi/browser/archive"
+	"github.com/andrewarchi/archive"
 )
 
 // Export contains the paths to each part in a Takeout export and the
