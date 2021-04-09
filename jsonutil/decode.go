@@ -10,28 +10,60 @@ package jsonutil
 import (
 	"encoding"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
 )
 
 // Decode decodes the result into data, requiring fields to match
-// strictly.
-func Decode(r io.Reader, data interface{}) error {
-	d := json.NewDecoder(r)
-	d.DisallowUnknownFields()
-	return d.Decode(data)
+// strictly and checking for trailing text. The reader is read until EOF
+// so that HTTP response bodies are properly closed.
+func Decode(r io.Reader, v interface{}) error {
+	return decode(r, v, true)
 }
 
 // DecodeFile opens the given file and decodes the result into data,
 // requiring fields to match strictly.
-func DecodeFile(filename string, data interface{}) error {
+func DecodeFile(filename string, v interface{}) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return Decode(f, data)
+	return decode(f, v, false)
+}
+
+func decode(r io.Reader, v interface{}, readAll bool) error {
+	d := json.NewDecoder(r)
+	d.DisallowUnknownFields()
+	if err := d.Decode(v); err != nil {
+		if readAll {
+			_, _ = io.Copy(io.Discard, r)
+		}
+		return err
+	}
+
+	br := io.MultiReader(d.Buffered(), r)
+	var buf [4096]byte
+	for {
+		n, err := br.Read(buf[:])
+		if err == io.EOF {
+			return nil
+		}
+		for _, b := range buf[:n] {
+			if !isSpace(b) {
+				if readAll {
+					_, _ = io.Copy(io.Discard, r)
+				}
+				return fmt.Errorf("json: invalid trailing character: %q", b)
+			}
+		}
+	}
+}
+
+func isSpace(c byte) bool {
+	return c <= ' ' && (c == ' ' || c == '\t' || c == '\r' || c == '\n')
 }
 
 // QuotedUnmarshal removes quotes then unmarshals the data. Escape
