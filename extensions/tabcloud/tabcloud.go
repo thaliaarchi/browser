@@ -21,7 +21,7 @@ import (
 	     https://chrometabcloud.appspot.com/login     Sign in with Google account
 	     https://chrometabcloud.appspot.com/logout    Sign out
 	GET  https://chrometabcloud.appspot.com/tabcloud  Retrieve list of windows
-	POST https://chrometabcloud.appspot.com/add	      Add a window
+	POST https://chrometabcloud.appspot.com/add       Add a window
 	POST https://chrometabcloud.appspot.com/update    Update a window
 	POST https://chrometabcloud.appspot.com/move      Rearrange windows
 	POST https://chrometabcloud.appspot.com/remove    Delete a window

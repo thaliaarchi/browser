@@ -123,7 +123,7 @@ type Addon struct {
 	InstallTelemetryInfo   *InstallTelemetryInfo  `json:"installTelemetryInfo"`
 	RecommendationState    *RecommendationState   `json:"recommendationState"`
 	RootURI                string                 `json:"rootURI"`
-	Location               string                 `json:"location"` // i.e. "app-builtin"
+	Location               string                 `json:"location"` // i.e. "app-builtin", "app-profile", "app-system-addons", "app-system-defaults", "app-system-local"
 }
 
 // Locale contains addon information in a locale.
@@ -145,11 +145,13 @@ type TargetApplication struct {
 }
 
 type StartupData struct {
-	Dictionaries        map[string]string    `json:"dictionaries,omitempty"` // key: locale, value: path to .dic
-	ChromeEntries       [][]string           `json:"chromeEntries"`
-	LangpackID          string               `json:"langpackId,omitempty"`
-	L10nRegistrySources *L10nRegistrySources `json:"l10nRegistrySources,omitempty"`
-	Languages           []string             `json:"languages"`
+	Dictionaries map[string]string `json:"dictionaries,omitempty"` // key: locale, value: path to .dic
+	// PersistentListeners key1: module name (i.e. "webRequest"), key2: name of event within module (i.e. "onBeforeRequest"), value: multiple listeners
+	PersistentListeners map[string]map[string][][]interface{} `json:"persistentListeners,omitempty"`
+	ChromeEntries       [][]string                            `json:"chromeEntries"`
+	LangpackID          string                                `json:"langpackId,omitempty"`
+	L10nRegistrySources *L10nRegistrySources                  `json:"l10nRegistrySources,omitempty"`
+	Languages           []string                              `json:"languages"`
 }
 
 type L10nRegistrySources struct {
@@ -159,14 +161,14 @@ type L10nRegistrySources struct {
 
 type InstallTelemetryInfo struct {
 	Source    string `json:"source"`           // i.e. "app-system-local"
-	Method    string `json:"method,omitempty"` // i.e. "sideload"
+	Method    string `json:"method,omitempty"` // i.e. "amWebAPI", "sideload"
 	SourceURL string `json:"sourceURL,omitempty"`
 }
 
 type RecommendationState struct {
 	ValidNotAfter  timefmt.UnixMilli `json:"validNotAfter"`
 	ValidNotBefore timefmt.UnixMilli `json:"validNotBefore"`
-	States         []string          `json:"states"` // i.e. "line"
+	States         []string          `json:"states"` // i.e. "line", "recommended", "recommended-android"
 }
 
 // ParseExtensions parses extensions.json in a Firefox profile.
