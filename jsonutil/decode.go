@@ -17,14 +17,15 @@ import (
 )
 
 // Decode decodes the result into data, requiring fields to match
-// strictly and checking for trailing text. The reader is read until EOF
-// so that HTTP response bodies are properly closed.
+// strictly and checking for trailing text. The reader is read to
+// completion so that HTTP response bodies are properly closed and
+// connections can be reused.
 func Decode(r io.Reader, v interface{}) error {
 	return decode(r, v, true)
 }
 
 // DecodeFile opens the given file and decodes the result into data,
-// requiring fields to match strictly.
+// requiring fields to match strictly and checking for trailing text.
 func DecodeFile(filename string, v interface{}) error {
 	f, err := os.Open(filename)
 	if err != nil {
