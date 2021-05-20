@@ -18,26 +18,46 @@ import (
 
 // Decode decodes the result into data, requiring fields to match
 // strictly and checking for trailing text. The reader is read to
-// completion so that HTTP response bodies are properly closed and
-// connections can be reused.
+// completion, even on error, so that HTTP response bodies are properly
+// closed and connections can be reused.
 func Decode(r io.Reader, v interface{}) error {
-	return decode(r, v, true)
+	return decode(r, v, true, true)
+}
+
+// DecodeAllowUnknownFields decodes the result into data, checking for
+// trailing text. The reader is read to completion, even on error, so
+// that HTTP response bodies are properly closed and connections can be
+// reused.
+func DecodeAllowUnknownFields(r io.Reader, v interface{}) error {
+	return decode(r, v, false, true)
 }
 
 // DecodeFile opens the given file and decodes the result into data,
 // requiring fields to match strictly and checking for trailing text.
 func DecodeFile(filename string, v interface{}) error {
+	return decodeFile(filename, v, true)
+}
+
+// DecodeFileAllowUnknownFields opens the given file and decodes the
+// result into data, checking for trailing text.
+func DecodeFileAllowUnknownFields(filename string, v interface{}) error {
+	return decodeFile(filename, v, false)
+}
+
+func decodeFile(filename string, v interface{}, strict bool) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return decode(f, v, false)
+	return decode(f, v, strict, false)
 }
 
-func decode(r io.Reader, v interface{}, readAll bool) error {
+func decode(r io.Reader, v interface{}, strict, readAll bool) error {
 	d := json.NewDecoder(r)
-	d.DisallowUnknownFields()
+	if strict {
+		d.DisallowUnknownFields()
+	}
 	if err := d.Decode(v); err != nil {
 		if readAll {
 			_, _ = io.Copy(io.Discard, r)
