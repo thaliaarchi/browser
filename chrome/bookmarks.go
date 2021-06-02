@@ -17,7 +17,7 @@ type Bookmarks struct {
 	Checksum     jsonutil.Hex    `json:"checksum"`
 	Roots        BookmarkRoots   `json:"roots"`
 	SyncMetadata jsonutil.Base64 `json:"sync_metadata,omitempty"`
-	Version      int             `json:"version"` // i.e. 1
+	Version      int             `json:"version"` // e.g. 1
 }
 
 // BookmarkRoots contains the root level bookmarks folders.
@@ -33,7 +33,7 @@ type BookmarkEntry struct {
 	DateAdded    timefmt.QuotedChrome `json:"date_added"`
 	DateModified timefmt.QuotedChrome `json:"date_modified,omitempty"` // for folder type only
 	GUID         *uuid.UUID           `json:"guid"`                    // "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-	ID           string               `json:"id"`                      // i.e. "567"
+	ID           string               `json:"id"`                      // e.g. "567"
 	Name         string               `json:"name"`
 	Type         string               `json:"type"` // "folder" or "url"
 	MetaInfo     *BookmarkMetaInfo    `json:"meta_info,omitempty"`

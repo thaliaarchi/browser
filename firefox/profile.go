@@ -54,15 +54,15 @@ func ProfilesDir() (string, error) {
 // ProfileInfo contains Firefox profiles and installs.
 type ProfileInfo struct {
 	StartWithLastProfile bool
-	Version              int       // i.e. 2
+	Version              int       // e.g. 2
 	Profiles             []Profile `ini:"-"`
 	Installs             []Install `ini:"-"`
 }
 
 // Profile is a Firefox profile.
 type Profile struct {
-	ID         int    `ini:"-"` // sequential (i.e. 0, 1, 2)
-	Name       string // i.e. "default", "default-release", "dev-edition-default"
+	ID         int    `ini:"-"` // sequential (e.g. 0, 1, 2)
+	Name       string // e.g. "default", "default-release", "dev-edition-default"
 	IsRelative bool
 	Path       string
 	Default    bool

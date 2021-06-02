@@ -15,7 +15,7 @@ import (
 // ExtensionSettings contains preferences and commands set by extensions
 // in extension-settings.json.
 type ExtensionSettings struct {
-	Version              int                 `json:"version"` // i.e. 2
+	Version              int                 `json:"version"` // e.g. 2
 	Commands             map[string]Command  `json:"commands"`
 	URLOverrides         jsonutil.UnknownObj `json:"url_overrides"`
 	Prefs                map[string]Pref     `json:"prefs"`
@@ -58,7 +58,7 @@ func ParseExtensionSettings(filename string) (*ExtensionSettings, error) {
 // ExtensionPermissions lists additional permissions granted to an
 // extension in extension-preferences.json.
 type ExtensionPermissions struct {
-	Permissions []string `json:"permissions"` // i.e. "clipboardWrite" or "internal:privateBrowsingAllowed"
+	Permissions []string `json:"permissions"` // e.g. "clipboardWrite" or "internal:privateBrowsingAllowed"
 	Origins     []string `json:"origins"`     // origins given access to
 }
 
@@ -73,7 +73,7 @@ func ParseExtensionPreferences(filename string) (map[string]ExtensionPermissions
 }
 
 type Extensions struct {
-	SchemaVersion int     `json:"schemaVersion"` // i.e. 33
+	SchemaVersion int     `json:"schemaVersion"` // e.g. 33
 	Addons        []Addon `json:"addons"`
 }
 
@@ -96,7 +96,7 @@ type Addon struct {
 	EmbedderDisabled       bool                   `json:"embedderDisabled"`
 	InstallDate            int64                  `json:"installDate"`
 	UpdateDate             timefmt.UnixMilli      `json:"updateDate,omitempty"`
-	ApplyBackgroundUpdates interface{}            `json:"applyBackgroundUpdates"` // i.e. 1 or "1"
+	ApplyBackgroundUpdates interface{}            `json:"applyBackgroundUpdates"` // e.g. 1 or "1"
 	Path                   string                 `json:"path"`
 	Skinnable              bool                   `json:"skinnable"`
 	SourceURI              string                 `json:"sourceURI"`
@@ -107,23 +107,23 @@ type Addon struct {
 	Locales                []Locale               `json:"locales"`
 	TargetApplications     []TargetApplication    `json:"targetApplications"`
 	TargetPlatforms        []jsonutil.UnknownType `json:"targetPlatforms"`
-	SignedState            int                    `json:"signedState,omitempty"` // i.e. 2
+	SignedState            int                    `json:"signedState,omitempty"` // e.g. 2
 	SignedDate             timefmt.UnixMilli      `json:"signedDate"`
 	Seen                   bool                   `json:"seen"`
 	Dependencies           []interface{}          `json:"dependencies"`
-	Incognito              string                 `json:"incognito,omitempty"` // i.e. "not_allowed", "spanning"
+	Incognito              string                 `json:"incognito,omitempty"` // e.g. "not_allowed", "spanning"
 	UserPermissions        *ExtensionPermissions  `json:"userPermissions"`
 	OptionalPermissions    *ExtensionPermissions  `json:"optionalPermissions"`
 	Icons                  map[int]string         `json:"icons"` // key: icon size, value: path
 	IconURL                string                 `json:"iconURL"`
-	BlocklistState         int                    `json:"blocklistState"` // i.e. 2
+	BlocklistState         int                    `json:"blocklistState"` // e.g. 2
 	BlocklistURL           string                 `json:"blocklistURL"`
 	StartupData            *StartupData           `json:"startupData"`
 	Hidden                 bool                   `json:"hidden"`
 	InstallTelemetryInfo   *InstallTelemetryInfo  `json:"installTelemetryInfo"`
 	RecommendationState    *RecommendationState   `json:"recommendationState"`
 	RootURI                string                 `json:"rootURI"`
-	Location               string                 `json:"location"` // i.e. "app-builtin", "app-profile", "app-system-addons", "app-system-defaults", "app-system-local"
+	Location               string                 `json:"location"` // e.g. "app-builtin", "app-profile", "app-system-addons", "app-system-defaults", "app-system-local"
 }
 
 // Locale contains addon information in a locale.
@@ -139,14 +139,14 @@ type Locale struct {
 }
 
 type TargetApplication struct {
-	ID         string `json:"id"` // i.e. "toolkit@mozilla.org"
+	ID         string `json:"id"` // e.g. "toolkit@mozilla.org"
 	MinVersion string `json:"minVersion"`
 	MaxVersion string `json:"maxVersion"`
 }
 
 type StartupData struct {
 	Dictionaries map[string]string `json:"dictionaries,omitempty"` // key: locale, value: path to .dic
-	// PersistentListeners key1: module name (i.e. "webRequest"), key2: name of event within module (i.e. "onBeforeRequest"), value: multiple listeners
+	// PersistentListeners key1: module name (e.g. "webRequest"), key2: name of event within module (e.g. "onBeforeRequest"), value: multiple listeners
 	PersistentListeners map[string]map[string][][]interface{} `json:"persistentListeners,omitempty"`
 	ChromeEntries       [][]string                            `json:"chromeEntries"`
 	LangpackID          string                                `json:"langpackId,omitempty"`
@@ -160,15 +160,15 @@ type L10nRegistrySources struct {
 }
 
 type InstallTelemetryInfo struct {
-	Source    string `json:"source"`           // i.e. "app-system-local"
-	Method    string `json:"method,omitempty"` // i.e. "amWebAPI", "sideload"
+	Source    string `json:"source"`           // e.g. "app-system-local"
+	Method    string `json:"method,omitempty"` // e.g. "amWebAPI", "sideload"
 	SourceURL string `json:"sourceURL,omitempty"`
 }
 
 type RecommendationState struct {
 	ValidNotAfter  timefmt.UnixMilli `json:"validNotAfter"`
 	ValidNotBefore timefmt.UnixMilli `json:"validNotBefore"`
-	States         []string          `json:"states"` // i.e. "line", "recommended", "recommended-android"
+	States         []string          `json:"states"` // e.g. "line", "recommended", "recommended-android"
 }
 
 // ParseExtensions parses extensions.json in a Firefox profile.

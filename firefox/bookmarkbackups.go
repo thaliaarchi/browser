@@ -29,12 +29,12 @@ type BookmarkBackup struct {
 
 // BookmarkBackupEntry is an entry in a bookmark backup.
 type BookmarkBackupEntry struct {
-	GUID         string                `json:"guid"` // i.e. "xQxadA7g1y_x", "root________", "menu________", "toolbar_____", "unfiled_____", "mobile______"
+	GUID         string                `json:"guid"` // e.g. "xQxadA7g1y_x", "root________", "menu________", "toolbar_____", "unfiled_____", "mobile______"
 	Title        string                `json:"title"`
 	Index        int                   `json:"index"` // index of child
 	DateAdded    timefmt.UnixMicro     `json:"dateAdded"`
 	LastModified timefmt.UnixMicro     `json:"lastModified"`
-	ID           int                   `json:"id"`       // sequential (i.e. 0, 1, 2)
+	ID           int                   `json:"id"`       // sequential (e.g. 0, 1, 2)
 	TypeCode     int                   `json:"typeCode"` // place: 1, place-container: 2
 	Type         string                `json:"type"`     // "text/x-moz-place", "text/x-moz-place-container"
 	Root         string                `json:"root,omitempty"`

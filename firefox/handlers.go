@@ -10,23 +10,23 @@ import "github.com/andrewarchi/browser/jsonutil"
 
 // Handlers registers handlers for MIME types and URI schemes.
 type Handlers struct {
-	DefaultHandlersVersion map[string]int      `json:"defaultHandlersVersion"` // key: locale (i.e. "en-US")
-	MIMETypes              map[string]MimeType `json:"mimeTypes"`              // key: MIME type (i.e. "image/jpeg")
-	Schemes                map[string]Scheme   `json:"schemes"`                // key: URI scheme (i.e. "mailto")
+	DefaultHandlersVersion map[string]int      `json:"defaultHandlersVersion"` // key: locale (e.g. "en-US")
+	MIMETypes              map[string]MimeType `json:"mimeTypes"`              // key: MIME type (e.g. "image/jpeg")
+	Schemes                map[string]Scheme   `json:"schemes"`                // key: URI scheme (e.g. "mailto")
 }
 
 // MimeType registers an action to perform for a MIME type and assigns
 // file extensions to that MIME type.
 type MimeType struct {
-	Action     int      `json:"action"` // i.e. 0, 3
+	Action     int      `json:"action"` // e.g. 0, 3
 	Ask        bool     `json:"ask,omitempty"`
-	Extensions []string `json:"extensions,omitempty"` // i.e. "jpg", "jpeg"
+	Extensions []string `json:"extensions,omitempty"` // e.g. "jpg", "jpeg"
 }
 
 // Scheme registers an action to perform for a URI scheme and a list of
 // handler applications.
 type Scheme struct {
-	Action    int              `json:"action"` // i.e. 2, 4
+	Action    int              `json:"action"` // e.g. 2, 4
 	Ask       bool             `json:"ask,omitempty"`
 	StubEntry bool             `json:"stubEntry,omitempty"` // true when handler unchanged from default
 	Handlers  []*SchemeHandler `json:"handlers,omitempty"`

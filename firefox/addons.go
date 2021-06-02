@@ -15,7 +15,7 @@ import (
 // Addons contains information from addons.mozilla.org for installed
 // addons.
 type Addons struct {
-	Schema int         `json:"schema"` // i.e. 6
+	Schema int         `json:"schema"` // e.g. 6
 	Addons []AddonInfo `json:"addons"`
 }
 
@@ -23,7 +23,7 @@ type Addons struct {
 type AddonInfo struct {
 	ID              *uuid.Firefox     `json:"id"`
 	Icons           map[int]string    `json:"icons"` // key: icon size, value: path
-	Type            string            `json:"type"`  // i.e. "extension", "locale", "dictionary"
+	Type            string            `json:"type"`  // e.g. "extension", "locale", "dictionary"
 	Name            string            `json:"name"`
 	Version         string            `json:"version"`
 	Creator         Person            `json:"creator"`

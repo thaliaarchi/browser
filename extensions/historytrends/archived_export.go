@@ -22,8 +22,8 @@ import (
 	features on the Options page.
 
 	0: URL              visited URL
-	1: Visit Time       visit time in UTC                     i.e. U1384634958041.754 (Unix milliseconds), 13149893660345543 (Windows microseconds)
-	2: Transition Type  how the browser navigated to the URL  i.e. 1
+	1: Visit Time       visit time in UTC                     e.g. U1384634958041.754 (Unix milliseconds), 13149893660345543 (Windows microseconds)
+	2: Transition Type  how the browser navigated to the URL  e.g. 1
 	3: Page Title*      page title of the visited URL
 	* column can be blank
 

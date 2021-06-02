@@ -15,8 +15,8 @@ import (
 // Firefox is an ID or UUID and is used by Firefox addons. ID is
 // preferred for display.
 type Firefox struct {
-	ID   string // i.e. "addon@example.com"
-	UUID *UUID  // i.e. "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
+	ID   string // e.g. "addon@example.com"
+	UUID *UUID  // e.g. "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.

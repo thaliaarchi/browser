@@ -114,7 +114,7 @@ type SearchEngine struct {
 	SearchTermsReplacementKey   *string        `json:"search_terms_replacement_key,omitempty"`
 	DeprecatedShowInDefaultList *bool          `json:"deprecated_show_in_default_list,omitempty"`
 	SyncGUID                    string         `json:"sync_guid"`
-	InputEncodings              string         `json:"input_encodings"` // i.e. "UTF-8"
+	InputEncodings              string         `json:"input_encodings"` // e.g. "UTF-8"
 	AlternateUrls               []string       `json:"alternate_urls,omitempty"`
 	PrepopulateID               int64          `json:"prepopulate_id"`
 }
@@ -122,7 +122,7 @@ type SearchEngine struct {
 type App struct {
 	AppLaunchOrdinal string    `json:"app_launch_ordinal"`
 	Extension        Extension `json:"extension"`
-	PageOrdinal      string    `json:"page_ordinal"` // i.e. "n", "t"
+	PageOrdinal      string    `json:"page_ordinal"` // e.g. "n", "t"
 }
 
 type AppSetting struct {

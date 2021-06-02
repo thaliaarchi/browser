@@ -28,10 +28,10 @@ import (
 	0: URL                  visited URL
 	1: Host*                hostname of visited URL
 	2: Domain*              public suffix of visited URL
-	3: Visit Time (ms)      visit time in milliseconds since 1970-01-01  i.e. 1384634958041.754
-	4: Visit Time (string)  visit time in local time                     i.e. 2013-11-16 14:49:18.041
+	3: Visit Time (ms)      visit time in milliseconds since 1970-01-01  e.g. 1384634958041.754
+	4: Visit Time (string)  visit time in local time                     e.g. 2013-11-16 14:49:18.041
 	5: Day of Week          local day of the week for the visit time     0 for Sunday
-	6: Transition Type      how the browser navigated to the URL         i.e. link
+	6: Transition Type      how the browser navigated to the URL         e.g. link
 	7: Page Title*          page title of visited URL
 	* column can be blank
 
